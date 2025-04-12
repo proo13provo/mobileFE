@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/create"
+    android:padding="16dp">
+
+    <!-- Logo -->
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/gwp_logo"
+        android:layout_gravity="center"
+        android:contentDescription="Logo"/>
+
+    <!-- Title Text -->
+    <!-- Thêm hiệu ứng viền nhẹ -->
+
+
+    <!-- Name Input Field -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+
+        android:shadowColor="#FFD700"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"
+        android:text="Where artists &amp; fans connect."
+        android:textColor="@android:color/white"
+        android:textSize="40sp" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/input_selector"
+        android:hint="Enter your name"
+        android:padding="16dp"
+        android:textColorHint="#FFD700"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"/>
+
+    <EditText
+        android:id="@+id/email1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/input_selector"
+        android:hint="Enter your email"
+        android:padding="16dp"
+        android:textColorHint="#FFD700"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:inputType="textEmailAddress"/>
+
+    <EditText
+        android:id="@+id/password1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/input_selector"
+        android:hint="Enter your password"
+        android:padding="16dp"
+        android:textColorHint="#FFD700"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:inputType="textPassword"/>
+
+    <!-- Create Account Button -->
+    <Button
+        android:id="@+id/createAccount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/button_white"
+        android:padding="16dp"
+        android:text="Create an account"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Divider -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OR"
+        android:textColor="#999999"
+        android:gravity="center"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Social Login Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="24dp">
+
+        <!-- Facebook Login Button -->
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/facebook"
+            android:layout_marginRight="24dp"
+            android:contentDescription="Login with Facebook"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <!-- Google Login Button -->
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/google"
+            android:contentDescription="Login with Google"
+            android:clickable="true"
+            android:focusable="true"/>
+    </LinearLayout>
+
+    <!-- Already have an account? Login -->
+    <TextView
+        android:id="@+id/login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Already have an account? Login"
+        android:textColor="#999999"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>
