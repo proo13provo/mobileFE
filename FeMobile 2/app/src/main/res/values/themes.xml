@@ -1,8 +1,0 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.FeMobile" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
-    </style>
-
-    <style name="Theme.Learns" parent="Base.Theme.FeMobile" />
-</resources>
