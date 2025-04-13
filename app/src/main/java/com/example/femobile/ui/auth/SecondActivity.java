@@ -1,32 +1,40 @@
 package com.example.femobile.ui.auth;
 
-import static android.widget.Toast.LENGTH_LONG;
-
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.femobile.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class SecondActivity extends AppCompatActivity {
+public class SecondActivity extends AppCompatActivity  {
     EditText user;
     EditText passW;
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.send);
-        user = findViewById(R.id.infor);
-        passW = findViewById(R.id.passinfor);
-       String name = getIntent().getStringExtra("name");
-       String pass = getIntent().getStringExtra("pass");
-       user.setText("Ten " + name);
-       passW.setText("Mat khau " + pass);
-        Toast.makeText(this, "Tài khoản: " + name + "\nMật khẩu: " + passW,LENGTH_LONG).show();
+        setContentView(R.layout.home);
 
-
+        BottomNavigationView navigationView = findViewById(R.id.botom_nav);
+        navigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_home:
+                        break;
+                    case R.id.action_search:
+                        break;
+                    case R.id.action_setting:
+                        break;
+                    case R.id.action_library:
+                        break;
+                }
+                return true;
+            }
+        });
 
     }
 }

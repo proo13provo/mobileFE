@@ -3,6 +3,4 @@
     <style name="Theme.FeMobile" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
     </style>
-
-    <style name="Theme.Learns" parent="Base.Theme.FeMobile" />
 </resources>
