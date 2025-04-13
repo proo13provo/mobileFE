@@ -39,8 +39,6 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
         });
      bthButton.setOnClickListener(v -> {
-         Log.d("DEBUG", "Nút CreateAccount đã được click");
-         Toast.makeText(this, "Đã nhấn nút!", Toast.LENGTH_SHORT).show();
          String email = edtEmail.getText().toString();
          String password = edtPassword.getText().toString();
          LoginRequest request = new LoginRequest(email, password);
@@ -74,6 +72,8 @@ public class LoginActivity extends AppCompatActivity {
                  t.printStackTrace();
              }
          });
+
+
         });
 
 

@@ -1,32 +1,51 @@
 package com.example.femobile.ui.auth;
 
-import static android.widget.Toast.LENGTH_LONG;
-
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.femobile.R;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class SecondActivity extends AppCompatActivity {
+public class SecondActivity extends AppCompatActivity  {
     EditText user;
     EditText passW;
+    BottomNavigationView navigationView;
+    ViewPager2 mViewpage;
+
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.send);
-        user = findViewById(R.id.infor);
-        passW = findViewById(R.id.passinfor);
-       String name = getIntent().getStringExtra("name");
-       String pass = getIntent().getStringExtra("pass");
-       user.setText("Ten " + name);
-       passW.setText("Mat khau " + pass);
-        Toast.makeText(this, "Tài khoản: " + name + "\nMật khẩu: " + passW,LENGTH_LONG).show();
+        setContentView(R.layout.home);
 
+        navigationView = findViewById(R.id.bottom_nav);
+        mViewpage = findViewById(R.id.view_pager);
 
+        setUpViewPager();
+
+        navigationView.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.menu_home) {
+                mViewpage.setCurrentItem(0);
+                return true;
+            } else if (id == R.id.menu_search) {
+                mViewpage.setCurrentItem(1);
+                return true;
+            } else if (id == R.id.menu_library) {
+                mViewpage.setCurrentItem(2);
+                return true;
+            }
+            return false;
+        });
+    }
+    private void setUpViewPager() {
+        viewPagerAdapter adapter = new viewPagerAdapter(this);
+        mViewpage.setAdapter(adapter);
 
     }
 }
