@@ -1,5 +1,6 @@
 package com.example.femobile.ui.auth;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,7 +36,11 @@ public class RegisterActivity extends AppCompatActivity {
         edtEmail = findViewById(R.id.email1);
         edtPassword = findViewById(R.id.password1);
 
-
+        TextView btnLogin = findViewById(R.id.sendlogin);
+        btnLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            startActivity(intent);
+        });
 
         bthButton.setOnClickListener(v -> {
             Log.d("DEBUG", "Nút CreateAccount đã được click");

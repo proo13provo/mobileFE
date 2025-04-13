@@ -4,7 +4,7 @@
         <shape android:shape="rectangle">
             <solid android:color="@android:color/transparent"/> <!-- Nền trong suốt -->
             <stroke android:width="2dp" android:color="@android:color/white"/> <!-- Viền trắng -->
-            <corners android:radius="8dp"/> <!-- Bo góc -->
+            <corners android:radius="25dp"/> <!-- Bo góc -->
         </shape>
     </item>
 </selector>
