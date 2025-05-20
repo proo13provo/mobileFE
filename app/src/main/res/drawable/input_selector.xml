@@ -10,7 +10,7 @@
         <shape>
             <solid android:color="@android:color/transparent"/>
             <stroke android:width="2dp" android:color="#DDDDDD"/> <!-- Viền trắng nhẹ khi không focus -->
-            <corners android:radius="16dp"/>
+            <corners android:radius="10dp"/>
         </shape>
     </item>
 </selector>

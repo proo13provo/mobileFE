@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- values/styles.xml -->
+<resources>
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">#7FFFD4</item>
+        <item name="colorPrimaryVariant">#5FBFA6</item>
+        <item name="colorOnPrimary">#121212</item>
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">#7FFFD4</item>
+        <item name="colorSecondaryVariant">#5FBFA6</item>
+        <item name="colorOnSecondary">#121212</item>
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <!-- Background color -->
+        <item name="android:colorBackground">#121212</item>
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#AAAAAA</item>
+        <!-- Other settings -->
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+</resources>

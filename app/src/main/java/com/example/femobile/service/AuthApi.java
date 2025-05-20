@@ -1,14 +1,16 @@
 package com.example.femobile.service;
 
-import com.example.femobile.model.request.LoginRequest;
-import com.example.femobile.model.request.LogoutRequest;
-import com.example.femobile.model.request.RefreshTokenRequest;
-import com.example.femobile.model.request.RegisterRequest;
-import com.example.femobile.model.request.VerificationRequest;
+import com.example.femobile.model.request.AuthRequest.LoginRequest;
+import com.example.femobile.model.request.AuthRequest.LogoutRequest;
+import com.example.femobile.model.request.AuthRequest.RefreshTokenRequest;
+import com.example.femobile.model.request.AuthRequest.RegisterRequest;
+import com.example.femobile.model.request.AuthRequest.VerificationRequest;
 import com.example.femobile.model.response.AuthResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 
@@ -25,7 +27,11 @@ public interface AuthApi {
     @POST("auth/logout")
     Call<AuthResponse> logout(@Header("Authorization") String token, @Body LogoutRequest request);
 
-    @POST("api/auth/getAccessToken")
+    @POST("auth/getAccessToken")
     Call<AuthResponse> refreshToken(@Body RefreshTokenRequest request);
 
+    @POST("auth/google/callback")
+    @FormUrlEncoded
+    Call<AuthResponse> loginWithGoogle(@Field("code") String authCode);
 }
+

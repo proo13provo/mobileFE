@@ -7,6 +7,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import com.example.femobile.*;
 import com.example.femobile.service.AuthApi;
+import com.example.femobile.service.SongApi;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -73,5 +74,9 @@ public class RetrofitClient {
             throw new RuntimeException(e);
         }
     }
+    public static SongApi getApiService(Context context) {
+        return getClient(context).create(SongApi.class);
+    }
+
 
 }

@@ -16,16 +16,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.index);
-        btnLogin = findViewById(R.id.loginAccount);
-        bthCreate = findViewById(R.id.createAccount);
+        setContentView(R.layout.activity_main);
+        btnLogin = findViewById(R.id.btnLogin);
+        bthCreate = findViewById(R.id.btnRegister);
         bthCreate.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this,RegisterActivity.class);
+            Intent intent = new Intent(MainActivity.this,RegisterViewModel.class);
             startActivity(intent);
 
         });
         btnLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            Intent intent = new Intent(MainActivity.this, LoginViewModel.class);
             startActivity(intent);
         });
     }

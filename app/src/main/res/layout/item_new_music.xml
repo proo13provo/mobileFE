@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="160dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginEnd="16dp">
+
+    <FrameLayout
+        android:layout_width="160dp"
+        android:layout_height="160dp">
+
+        <ImageView
+            android:id="@+id/music_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/new_music_placeholder" />
+
+        <!-- Spotify logo -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_spotify1"
+            android:layout_margin="8dp"
+            app:tint="@color/white" />
+    </FrameLayout>
+
+    <!-- Music title -->
+    <TextView
+        android:id="@+id/music_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="NEW MUSIC FRIDAY"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+
+    <!-- Artists -->
+    <TextView
+        android:id="@+id/music_artists"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rihanna, Avicii, Lola Young, Laufey, Jin"
+        android:textColor="#AAAAAA"
+        android:textSize="14sp"
+        android:maxLines="2"
+        android:ellipsize="end"/>
+</LinearLayout>

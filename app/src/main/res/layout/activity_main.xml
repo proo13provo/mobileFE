@@ -1,19 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.auth.MainActivity">
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#121212"
+    android:gravity="center_horizontal">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Thêm tài khoản"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="200dp"/>
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_spotify1"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="Spotify Icon" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hàng triệu bài hát.\nMiễn phí trên Spotify."
+        android:textColor="#FFFFFF"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:backgroundTint="@color/spotify_green"
+        android:lineSpacingExtra="6sp"
+        android:layout_marginBottom="100dp"/>
+
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/btn_border_white"
+        android:backgroundTint="@color/spotify_green"
+        android:text="Đăng ký miễn phí"
+        android:textColor="#121212"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:icon="@android:drawable/star_off"
+        android:background="@drawable/btn_border_white"
+
+        android:backgroundTint="@color/black"
+
+        android:layout_marginBottom="16dp"
+        android:text="Đăng nhập"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+
+        android:textStyle="bold"
+        android:gravity="center" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:lineSpacingExtra="4sp"
+        android:text="Khi bạn đăng nhập, bất kỳ ai khác sử dụng thiết bị này đều có thể truy cập vào tài khoản của bạn."
+        android:textAlignment="center"
+        android:textColor="#B3B3B3"
+        android:textSize="12sp" />
+
+</LinearLayout>

@@ -1,15 +1,13 @@
 package com.example.femobile.ui.auth;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.EditText;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.femobile.R;
+import com.example.femobile.adapter.viewPagerAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class SecondActivity extends AppCompatActivity  {
