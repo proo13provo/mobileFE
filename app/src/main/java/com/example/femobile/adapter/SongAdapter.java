@@ -3,6 +3,7 @@ package com.example.femobile.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,60 +14,73 @@ import com.bumptech.glide.Glide;
 import com.example.femobile.R;
 import com.example.femobile.model.request.SongRequest.Song;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
-    private List<Song> songList;
+    private List<Song> songs = new ArrayList<>();
 
-    public SongAdapter(List<Song> songList) {
-        this.songList = songList;
+    private OnItemClickListener listener;
+    public interface OnItemClickListener {
+        void onItemClick(Song song);
+    }
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
+
+    public void submitList(List<Song> newSongs) {
+        this.songs = newSongs != null ? newSongs : new ArrayList<>();
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.search_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_song, parent, false);
         return new SongViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder holder, int position) {
-        Song song = songList.get(position);
-        holder.bind(song);
+        Song song = songs.get(position);
+        holder.tvTitle.setText(song.getTitle());
+        holder.tvSinger.setText(song.getSinger());
+
+        // Xử lý load ảnh từ S3
+        String imageUrl = song.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_music_note) // Ảnh mặc định khi đang load
+                .error(R.drawable.ic_music_note) // Ảnh mặc định khi load lỗi
+                .centerCrop() // Cắt ảnh để vừa với kích thước
+                .into(holder.ivSongImage);
+        } else {
+            // Nếu không có URL ảnh, hiển thị ảnh mặc định
+            holder.ivSongImage.setImageResource(R.drawable.ic_music_note);
+        }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(song); // Gọi callback khi item được click
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return songList.size();
+        return songs.size();
     }
 
     static class SongViewHolder extends RecyclerView.ViewHolder {
-        private ImageView ivSongImage;
-        private TextView tvTitle;
-        private TextView tvSinger;
+        TextView tvTitle, tvSinger;
+        ImageView ivSongImage;
 
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivSongImage = itemView.findViewById(R.id.rvSongs);
-            tvTitle = itemView.findViewById(R.id.tvTitle);
-            tvSinger = itemView.findViewById(R.id.bottom_nav);
-        }
-
-        public void bind(Song song) {
-            tvTitle.setText(song.getTitle());
-            tvSinger.setText(song.getSinger());
-
-            // Load song image using Glide
-            if (song.getImageUrl() != null && !song.getImageUrl().isEmpty()) {
-                Glide.with(itemView.getContext())
-                        .load(song.getImageUrl())
-                        .placeholder(R.drawable.music)
-                        .error(R.drawable.music)
-                        .into(ivSongImage);
-            } else {
-                ivSongImage.setImageResource(R.drawable.music);
-            }
+            tvTitle = itemView.findViewById(R.id.tvSongTitle);
+            tvSinger = itemView.findViewById(R.id.tvSongSinger);
+            ivSongImage = itemView.findViewById(R.id.ivSongImage);
         }
     }
-} 
+}

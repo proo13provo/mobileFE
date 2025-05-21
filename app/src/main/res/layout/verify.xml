@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
+            android:layout_marginTop="25dp"
             android:id="@+id/btn_back"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -193,7 +194,7 @@
                 android:text="59s"
                 android:textColor="#7FFFD4"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"/>
 
         </LinearLayout>
 

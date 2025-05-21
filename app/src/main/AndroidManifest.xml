@@ -31,6 +31,8 @@
         <activity android:name=".ui.auth.LoginActivity" />
         <activity android:name=".ui.auth.SecondActivity" />
         <activity android:name=".ui.auth.VerifyActivity"/>
+        <activity android:name=".ui.auth.searchItemActivity"/>
+        <activity android:name=".ui.auth.SongDetailActivity"/>
     </application>
 
 </manifest>

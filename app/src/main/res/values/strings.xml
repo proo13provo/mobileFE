@@ -53,5 +53,7 @@
     <string name="default_web_client_id">705243783215-ei795tnvk2891u4pqvftiea6h80rjb1h.apps.googleusercontent.com</string>
     <string name="search_icon">Search Icon</string>
 
+    <string name="track_cover">track cover</string>
+
 </resources>
 

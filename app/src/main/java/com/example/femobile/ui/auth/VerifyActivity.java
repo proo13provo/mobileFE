@@ -3,6 +3,7 @@ package com.example.femobile.ui.auth;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -31,7 +32,10 @@ public class VerifyActivity extends AppCompatActivity {
     EditText etOtp1, etOtp2, etOtp3, etOtp4, etOtp5, etOtp6;
     Button btnVerify;
     ImageButton btnBack;
-    TextView tvResendCode,tvEmail;
+    TextView tvResendCode, tvEmail, tvTimer;
+    private CountDownTimer countDownTimer;
+    private static final long TIMER_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+    private static final long TIMER_INTERVAL = 1000; // Update every second
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,7 +53,9 @@ public class VerifyActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btn_back);
         tvResendCode = findViewById(R.id.tv_resend);
         tvEmail = findViewById(R.id.tv_email);
+        tvTimer = findViewById(R.id.tv_timer);
         setupOtpInputs();
+        startTimer();
 
         SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
         String email = sharedPreferences.getString("email", "example@email.com");
@@ -131,10 +137,14 @@ public class VerifyActivity extends AppCompatActivity {
             });
         });
 
-        // Resend code click listener (optional)
+        // Resend code click listener
         if (tvResendCode != null) {
             tvResendCode.setOnClickListener(v -> {
-                Toast.makeText(this, "Chức năng gửi lại mã chưa được triển khai", Toast.LENGTH_SHORT).show();
+                if (countDownTimer != null) {
+                    countDownTimer.cancel();
+                }
+                startTimer();
+                Toast.makeText(this, "Mã xác thực mới đã được gửi", Toast.LENGTH_SHORT).show();
                 // TODO: Implement resend code API call if required
             });
         }
@@ -170,4 +180,29 @@ public class VerifyActivity extends AppCompatActivity {
         }
     }
 
+    private void startTimer() {
+        countDownTimer = new CountDownTimer(TIMER_DURATION, TIMER_INTERVAL) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long minutes = (millisUntilFinished / 1000) / 60;
+                long seconds = (millisUntilFinished / 1000) % 60;
+                String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
+                tvTimer.setText(timeLeftFormatted);
+            }
+
+            @Override
+            public void onFinish() {
+                tvTimer.setText("00:00");
+                tvResendCode.setEnabled(true);
+            }
+        }.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
 }

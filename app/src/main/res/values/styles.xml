@@ -22,4 +22,9 @@
         <!-- Other settings -->
         <item name="android:windowTranslucentStatus">true</item>
     </style>
+    <style name="ShapeAppearanceOverlay.App.Rounded8" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+
 </resources>
