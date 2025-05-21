@@ -1,4 +1,4 @@
-package com.example.femobile.service;
+package com.example.femobile.service.api;
 
 import com.example.femobile.model.request.AuthRequest.LoginRequest;
 import com.example.femobile.model.request.AuthRequest.LogoutRequest;

@@ -1,12 +1,18 @@
 package com.example.femobile.ui.auth;
 
+import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageButton;
@@ -15,7 +21,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.palette.graphics.Palette;
 
 import com.bumptech.glide.Glide;
@@ -26,10 +35,10 @@ import com.bumptech.glide.request.target.Target;
 import com.example.femobile.R;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.network.RetrofitClient;
-import com.example.femobile.service.SongApi;
+import com.example.femobile.service.MusicService;
+import com.example.femobile.service.api.SongApi;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
@@ -37,20 +46,68 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SongDetailActivity extends AppCompatActivity {
-
     private static final String TAG = "SongDetailActivity";
+    private static final int PERMISSION_REQUEST_CODE = 123;
     TextView songTitle, artistName, currentTime, totalTime;
     ImageView albumArt;
     ImageButton backButton;
     FloatingActionButton playPauseButton;
     SeekBar seekBar;
     private String songId;
-    private MediaPlayer mediaPlayer;
-    private boolean isPlaying = false;
     private Song currentSong;
     private Handler handler;
     private Runnable updateTimeRunnable;
     private boolean isUserSeeking = false;
+    private MusicService musicService;
+    private boolean bound = false;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+        registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                startMusicService();
+            } else {
+                Toast.makeText(this, "Permission required for music playback", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "Service connected");
+            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+            musicService = binder.getService();
+            bound = true;
+            
+            // Check if we have a current song from intent
+            Song songFromIntent = getIntent().getParcelableExtra("currentSong");
+            boolean wasPlaying = getIntent().getBooleanExtra("isPlaying", false);
+            
+            if (songFromIntent != null) {
+                Log.d(TAG, "Found song from intent: " + songFromIntent.getTitle());
+                currentSong = songFromIntent;
+                updateUI(currentSong);
+                // Don't call resumePlayback here as it might interrupt current playback
+                if (wasPlaying && !musicService.isPlaying()) {
+                    Log.d(TAG, "Resuming playback from mini player");
+                    musicService.resumePlayback();
+                }
+            } else if (currentSong != null) {
+                Log.d(TAG, "Playing song after service connection: " + currentSong.getTitle());
+                musicService.playSong(currentSong);
+            }
+            updatePlayPauseButton();
+            // Start time updates
+            handler.post(updateTimeRunnable);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "Service disconnected");
+            bound = false;
+            // Stop time updates
+            handler.removeCallbacks(updateTimeRunnable);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,26 +139,65 @@ public class SongDetailActivity extends AppCompatActivity {
 
         // Get songId from intent
         songId = getIntent().getStringExtra("songId");
-        if (songId != null) {
+        Song songFromIntent = getIntent().getParcelableExtra("currentSong");
+        
+        if (songFromIntent != null) {
+            Log.d(TAG, "Using song from intent: " + songFromIntent.getTitle());
+            currentSong = songFromIntent;
+            updateUI(currentSong);
+            startMusicService();
+        } else if (songId != null) {
+            Log.d(TAG, "Loading song details for ID: " + songId);
+            startMusicService();
             loadSongDetails();
+        } else {
+            Log.e(TAG, "No song ID or song object provided");
+            Toast.makeText(this, "Error: No song selected", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         backButton.setOnClickListener(v -> {
-            stopPlayback();
             Intent intent = new Intent(SongDetailActivity.this, SecondActivity.class);
+            intent.putExtra("showMiniPlayer", true);
+            intent.putExtra("currentSong", currentSong);
+            intent.putExtra("isPlaying", musicService != null && musicService.isPlaying());
             startActivity(intent);
-            //animation
-            overridePendingTransition(R.anim.stay, R.anim.slide_in_down);
+            overridePendingTransition(R.anim.stay, R.anim.slide_out_down);
+            finish();
         });
 
-        playPauseButton.setOnClickListener(v -> togglePlayPause());
+        playPauseButton.setOnClickListener(v -> {
+            if (checkAndRequestPermissions()) {
+                togglePlayPause();
+            }
+        });
+    }
+
+    private boolean checkAndRequestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void startMusicService() {
+        Log.d(TAG, "Starting music service");
+        Intent intent = new Intent(this, MusicService.class);
+        // Start the service first
+        startService(intent);
+        // Then bind to it
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void setupSeekBar() {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser && mediaPlayer != null) {
+                if (fromUser && musicService != null) {
                     currentTime.setText(formatTime(progress));
                 }
             }
@@ -109,37 +205,58 @@ public class SongDetailActivity extends AppCompatActivity {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 isUserSeeking = true;
+                // Pause the time update while seeking
+                handler.removeCallbacks(updateTimeRunnable);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mediaPlayer != null) {
-                    mediaPlayer.seekTo(seekBar.getProgress());
+                if (musicService != null) {
+                    int progress = seekBar.getProgress();
+                    musicService.seekTo(progress);
+                    currentTime.setText(formatTime(progress));
                     isUserSeeking = false;
+                    // Resume time updates
+                    handler.post(updateTimeRunnable);
                 }
             }
         });
     }
 
     private void loadSongDetails() {
+        // If we already have a song from intent, don't load again
+        if (getIntent().getParcelableExtra("currentSong") != null) {
+            Log.d(TAG, "Using song from intent, skipping API call");
+            return;
+        }
+
         SongApi songApi = RetrofitClient.getApiService(this);
         songApi.getSong(songId).enqueue(new Callback<Song>() {
             @Override
             public void onResponse(Call<Song> call, Response<Song> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     currentSong = response.body();
+                    Log.d(TAG, "Song details loaded: " + currentSong.getTitle());
+                    Log.d(TAG, "Media URL: " + currentSong.getMediaUrl());
                     updateUI(currentSong);
-                    // Auto start playback after loading song details
-                    startPlayback();
+                    if (bound) {
+                        Log.d(TAG, "Service bound, playing song");
+                        musicService.playSong(currentSong);
+                        updatePlayPauseButton();
+                    } else {
+                        Log.d(TAG, "Service not bound yet, will play when connected");
+                        startMusicService();
+                    }
                 } else {
+                    Log.e(TAG, "Failed to load song details: " + response.code());
                     Toast.makeText(SongDetailActivity.this, "Không thể tải thông tin bài hát", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Song> call, Throwable t) {
-                Toast.makeText(SongDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Error loading song details", t);
+                Toast.makeText(SongDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -160,6 +277,7 @@ public class SongDetailActivity extends AppCompatActivity {
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        Log.e(TAG, "Failed to load album art", e);
                         return false;
                     }
 
@@ -167,23 +285,14 @@ public class SongDetailActivity extends AppCompatActivity {
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         if (resource instanceof BitmapDrawable) {
                             Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
-                            // Extract colors from the bitmap
                             Palette.from(bitmap).generate(palette -> {
                                 if (palette != null) {
-                                    // Get the dominant color
                                     int dominantColor = palette.getDominantColor(getResources().getColor(R.color.dark_red));
-                                    
-                                    // Get a vibrant color if available
                                     int vibrantColor = palette.getVibrantColor(dominantColor);
-                                    
-                                    // Apply the color to the background
                                     findViewById(R.id.rootLayout).setBackgroundColor(vibrantColor);
-                                    
-                                    // Adjust text colors based on background brightness
                                     int textColor = isColorDark(vibrantColor) ? 
                                         getResources().getColor(R.color.white) : 
                                         getResources().getColor(R.color.black);
-                                    
                                     songTitle.setTextColor(textColor);
                                     artistName.setTextColor(textColor);
                                 }
@@ -200,112 +309,43 @@ public class SongDetailActivity extends AppCompatActivity {
 
     private void togglePlayPause() {
         if (currentSong == null) {
+            Log.e(TAG, "No song to play");
             Toast.makeText(this, "Không có bài hát để phát", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (isPlaying) {
-            pausePlayback();
-        } else {
-            startPlayback();
+        if (!bound) {
+            Log.e(TAG, "Service not bound, attempting to bind again");
+            startMusicService();
+            Toast.makeText(this, "Đang kết nối service...", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
 
-    private void startPlayback() {
-        if (mediaPlayer == null) {
-            mediaPlayer = new MediaPlayer();
-            try {
-                String mediaUrl = currentSong.getMediaUrl();
-                if (mediaUrl == null || mediaUrl.isEmpty()) {
-                    Toast.makeText(this, "Không tìm thấy file nhạc", Toast.LENGTH_SHORT).show();
-                }
-
-                // Set up MediaPlayer
-                mediaPlayer.setDataSource(mediaUrl);
-                mediaPlayer.setOnPreparedListener(mp -> {
-                    mp.start();
-                    isPlaying = true;
-                    updatePlayPauseButton();
-                    // Start updating time display
-                    handler.post(updateTimeRunnable);
-                    // Set total time and seekbar max
-                    int duration = mp.getDuration();
-                    totalTime.setText(formatTime(duration));
-                    seekBar.setMax(duration);
-                });
-                mediaPlayer.setOnCompletionListener(mp -> {
-                    isPlaying = false;
-                    updatePlayPauseButton();
-                    // Stop updating time
-                    handler.removeCallbacks(updateTimeRunnable);
-                    // Reset current time and seekbar
-                    currentTime.setText(formatTime(0));
-                    seekBar.setProgress(0);
-                });
-                mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                    Log.e(TAG, "MediaPlayer error: " + what + ", " + extra);
-                    Toast.makeText(SongDetailActivity.this, "Lỗi phát nhạc", Toast.LENGTH_SHORT).show();
-                    isPlaying = false;
-                    updatePlayPauseButton();
-                    // Stop updating time
-                    handler.removeCallbacks(updateTimeRunnable);
-                    return true;
-                });
-
-                // Prepare MediaPlayer asynchronously
-                mediaPlayer.prepareAsync();
-            } catch (IOException e) {
-                Log.e(TAG, "Error preparing MediaPlayer", e);
-                Toast.makeText(this, "Không thể phát bài hát này", Toast.LENGTH_SHORT).show();
-                stopPlayback();
+        if (musicService != null) {
+            if (musicService.isPlaying()) {
+                Log.d(TAG, "Pausing playback");
+                musicService.pausePlayback();
+            } else {
+                Log.d(TAG, "Resuming playback");
+                musicService.resumePlayback();
             }
+            updatePlayPauseButton();
         } else {
-            mediaPlayer.start();
-            isPlaying = true;
-            updatePlayPauseButton();
-            // Start updating time display
-            handler.post(updateTimeRunnable);
-        }
-    }
-
-    private void pausePlayback() {
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            isPlaying = false;
-            updatePlayPauseButton();
-            // Stop updating time
-            handler.removeCallbacks(updateTimeRunnable);
-        }
-    }
-
-    private void stopPlayback() {
-        if (mediaPlayer != null) {
-            try {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
-                mediaPlayer.release();
-            } catch (Exception e) {
-                Log.e(TAG, "Error stopping MediaPlayer", e);
-            } finally {
-                mediaPlayer = null;
-                isPlaying = false;
-                updatePlayPauseButton();
-                // Stop updating time
-                handler.removeCallbacks(updateTimeRunnable);
-                // Reset time displays and seekbar
-                currentTime.setText(formatTime(0));
-                totalTime.setText(formatTime(0));
-                seekBar.setProgress(0);
-            }
+            Log.e(TAG, "MusicService is null");
+            Toast.makeText(this, "Service not ready", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void updateTimeDisplay() {
-        if (mediaPlayer != null && isPlaying && !isUserSeeking) {
-            int currentPosition = mediaPlayer.getCurrentPosition();
-            currentTime.setText(formatTime(currentPosition));
-            seekBar.setProgress(currentPosition);
+        if (bound && !isUserSeeking && musicService != null) {
+            int currentPosition = musicService.getCurrentPosition();
+            int duration = musicService.getDuration();
+            if (duration > 0) {
+                currentTime.setText(formatTime(currentPosition));
+                totalTime.setText(formatTime(duration));
+                seekBar.setMax(duration);
+                seekBar.setProgress(currentPosition);
+            }
         }
     }
 
@@ -316,7 +356,9 @@ public class SongDetailActivity extends AppCompatActivity {
     }
 
     private void updatePlayPauseButton() {
-        playPauseButton.setImageResource(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play);
+        if (bound) {
+            playPauseButton.setImageResource(musicService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
+        }
     }
 
     private boolean isColorDark(int color) {
@@ -329,8 +371,10 @@ public class SongDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopPlayback();
-        // Remove any pending callbacks
+        if (bound) {
+            unbindService(serviceConnection);
+            bound = false;
+        }
         handler.removeCallbacks(updateTimeRunnable);
     }
 }

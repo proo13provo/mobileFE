@@ -18,7 +18,7 @@ import com.example.femobile.R;
 import com.example.femobile.model.request.AuthRequest.LoginRequest;
 import com.example.femobile.model.response.AuthResponse;
 import com.example.femobile.network.RetrofitClient;
-import com.example.femobile.service.AuthApi;
+import com.example.femobile.service.api.AuthApi;
 
 import com.google.android.gms.auth.api.signin.*;
 import com.google.android.gms.common.api.ApiException;

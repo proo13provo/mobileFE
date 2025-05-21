@@ -6,8 +6,8 @@ import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import com.example.femobile.*;
-import com.example.femobile.service.AuthApi;
-import com.example.femobile.service.SongApi;
+import com.example.femobile.service.api.AuthApi;
+import com.example.femobile.service.api.SongApi;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;

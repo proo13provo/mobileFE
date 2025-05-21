@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,7 +13,7 @@ import com.example.femobile.R;
 import com.example.femobile.model.request.AuthRequest.RefreshTokenRequest;
 import com.example.femobile.model.response.AuthResponse;
 import com.example.femobile.network.RetrofitClient;
-import com.example.femobile.service.AuthApi;
+import com.example.femobile.service.api.AuthApi;
 
 import retrofit2.Call;
 import retrofit2.Callback;

@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +19,7 @@ import com.example.femobile.adapter.SongAdapter;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.response.SongResponse;
 import com.example.femobile.network.RetrofitClient;
-import com.example.femobile.service.SongApi;
+import com.example.femobile.service.api.SongApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +90,7 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
         SongApi songApi = RetrofitClient.getApiService(this);
         songApi.searchSongs(keyword).enqueue(new Callback<SongResponse>() {
             @Override
-            public void onResponse(Call<SongResponse> call, Response<SongResponse> response) {
+            public void onResponse(@NonNull Call<SongResponse> call, @NonNull Response<SongResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Song> songs = response.body().getData();
                     if (songs != null && !songs.isEmpty()) {
@@ -106,7 +107,7 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
             }
 
             @Override
-            public void onFailure(Call<SongResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<SongResponse> call, @NonNull Throwable t) {
                 adapter.submitList(new ArrayList<>());
                 tvNoResults.setVisibility(View.VISIBLE);
             }
