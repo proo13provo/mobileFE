@@ -27,7 +27,7 @@ public interface AuthApi {
     @POST("auth/logout")
     Call<AuthResponse> logout(@Header("Authorization") String token, @Body LogoutRequest request);
 
-    @POST("auth/getAccessToken")
+    @POST("auth/accessToken")
     Call<AuthResponse> refreshToken(@Body RefreshTokenRequest request);
 
     @POST("auth/google/callback")

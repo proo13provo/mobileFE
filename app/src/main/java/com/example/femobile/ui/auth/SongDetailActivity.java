@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,12 +43,14 @@ public class SongDetailActivity extends AppCompatActivity {
     ImageView albumArt;
     ImageButton backButton;
     FloatingActionButton playPauseButton;
+    SeekBar seekBar;
     private String songId;
     private MediaPlayer mediaPlayer;
     private boolean isPlaying = false;
     private Song currentSong;
     private Handler handler;
     private Runnable updateTimeRunnable;
+    private boolean isUserSeeking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,7 @@ public class SongDetailActivity extends AppCompatActivity {
         playPauseButton = findViewById(R.id.playPauseButton);
         currentTime = findViewById(R.id.currentTime);
         totalTime = findViewById(R.id.totalTime);
+        seekBar = findViewById(R.id.seekBar);
 
         // Initialize handler for updating time
         handler = new Handler(Looper.getMainLooper());
@@ -72,6 +76,9 @@ public class SongDetailActivity extends AppCompatActivity {
                 handler.postDelayed(this, 1000);
             }
         };
+
+        // Set up SeekBar
+        setupSeekBar();
 
         // Get songId from intent
         songId = getIntent().getStringExtra("songId");
@@ -90,6 +97,30 @@ public class SongDetailActivity extends AppCompatActivity {
         playPauseButton.setOnClickListener(v -> togglePlayPause());
     }
 
+    private void setupSeekBar() {
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && mediaPlayer != null) {
+                    currentTime.setText(formatTime(progress));
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                isUserSeeking = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.seekTo(seekBar.getProgress());
+                    isUserSeeking = false;
+                }
+            }
+        });
+    }
+
     private void loadSongDetails() {
         SongApi songApi = RetrofitClient.getApiService(this);
         songApi.getSong(songId).enqueue(new Callback<Song>() {
@@ -98,6 +129,8 @@ public class SongDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     currentSong = response.body();
                     updateUI(currentSong);
+                    // Auto start playback after loading song details
+                    startPlayback();
                 } else {
                     Toast.makeText(SongDetailActivity.this, "Không thể tải thông tin bài hát", Toast.LENGTH_SHORT).show();
                 }
@@ -195,16 +228,19 @@ public class SongDetailActivity extends AppCompatActivity {
                     updatePlayPauseButton();
                     // Start updating time display
                     handler.post(updateTimeRunnable);
-                    // Set total time
-                    totalTime.setText(formatTime(mp.getDuration()));
+                    // Set total time and seekbar max
+                    int duration = mp.getDuration();
+                    totalTime.setText(formatTime(duration));
+                    seekBar.setMax(duration);
                 });
                 mediaPlayer.setOnCompletionListener(mp -> {
                     isPlaying = false;
                     updatePlayPauseButton();
                     // Stop updating time
                     handler.removeCallbacks(updateTimeRunnable);
-                    // Reset current time
+                    // Reset current time and seekbar
                     currentTime.setText(formatTime(0));
+                    seekBar.setProgress(0);
                 });
                 mediaPlayer.setOnErrorListener((mp, what, extra) -> {
                     Log.e(TAG, "MediaPlayer error: " + what + ", " + extra);
@@ -257,17 +293,19 @@ public class SongDetailActivity extends AppCompatActivity {
                 updatePlayPauseButton();
                 // Stop updating time
                 handler.removeCallbacks(updateTimeRunnable);
-                // Reset time displays
+                // Reset time displays and seekbar
                 currentTime.setText(formatTime(0));
                 totalTime.setText(formatTime(0));
+                seekBar.setProgress(0);
             }
         }
     }
 
     private void updateTimeDisplay() {
-        if (mediaPlayer != null && isPlaying) {
+        if (mediaPlayer != null && isPlaying && !isUserSeeking) {
             int currentPosition = mediaPlayer.getCurrentPosition();
             currentTime.setText(formatTime(currentPosition));
+            seekBar.setProgress(currentPosition);
         }
     }
 

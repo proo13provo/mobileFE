@@ -143,6 +143,7 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("accessToken", authResponse.getAccessToken());
         editor.putString("refreshToken", authResponse.getRefreshToken());
+        Log.d(authResponse.getRefreshToken(), "refreshToken: ");
         editor.apply();
 
         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
