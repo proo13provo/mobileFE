@@ -29,13 +29,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class VerifyActivity extends AppCompatActivity {
-    EditText etOtp1, etOtp2, etOtp3, etOtp4, etOtp5, etOtp6;
-    Button btnVerify;
-    ImageButton btnBack;
-    TextView tvResendCode, tvEmail, tvTimer;
+    private static final String TAG = "VerifyActivity";
+    private EditText etOtp1, etOtp2, etOtp3, etOtp4, etOtp5, etOtp6;
+    private Button btnVerify;
+    private ImageButton btnBack;
+    private TextView tvResendCode, tvEmail, tvTimer;
     private CountDownTimer countDownTimer;
     private static final long TIMER_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
     private static final long TIMER_INTERVAL = 1000; // Update every second
+    private boolean isDestroyed = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,6 +45,22 @@ public class VerifyActivity extends AppCompatActivity {
         setContentView(R.layout.verify);
 
         // Initialize UI components
+        initializeViews();
+        setupOtpInputs();
+        startTimer();
+
+        // Get email from SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
+        String email = sharedPreferences.getString("email", null);
+        if (tvEmail != null) {
+            tvEmail.setText(email);
+        }
+
+        // Set up click listeners
+        setupClickListeners();
+    }
+
+    private void initializeViews() {
         etOtp1 = findViewById(R.id.et_otp_1);
         etOtp2 = findViewById(R.id.et_otp_2);
         etOtp3 = findViewById(R.id.et_otp_3);
@@ -54,17 +72,13 @@ public class VerifyActivity extends AppCompatActivity {
         tvResendCode = findViewById(R.id.tv_resend);
         tvEmail = findViewById(R.id.tv_email);
         tvTimer = findViewById(R.id.tv_timer);
-        setupOtpInputs();
-        startTimer();
+    }
 
-        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
-        String email = sharedPreferences.getString("email", "example@email.com");
-        if (tvEmail != null) {
-            tvEmail.setText(email);
-        }
+    private void setupClickListeners() {
         // Back button click listener
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
+                if (isDestroyed) return;
                 Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
                 startActivity(intent);
                 finish();
@@ -73,81 +87,94 @@ public class VerifyActivity extends AppCompatActivity {
 
         // Verify button click listener
         btnVerify.setOnClickListener(v -> {
-            // Combine OTP digits
-            String code = etOtp1.getText().toString() +
-                    etOtp2.getText().toString() +
-                    etOtp3.getText().toString() +
-                    etOtp4.getText().toString() +
-                    etOtp5.getText().toString() +
-                    etOtp6.getText().toString();
-
-            // Validate OTP
-            if (code.length() != 6) {
-                Toast.makeText(this, "Vui lòng nhập đủ 6 chữ số mã xác thực", Toast.LENGTH_SHORT).show();
-                etOtp1.requestFocus();
-                return;
-            }
-
-            // Get email from SharedPreferences
-            SharedPreferences sharedPreferences1 = getSharedPreferences("app_preferences", MODE_PRIVATE);
-            String email1 = sharedPreferences1.getString("email", null);
-
-            if (email1 == null) {
-                Toast.makeText(this, "Không tìm thấy email. Vui lòng đăng ký lại.", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
-
-            // Create verification request
-            VerificationRequest verifyRequest = new VerificationRequest(email,code);
-            AuthApi authService = RetrofitClient.getAuthService(this);
-
-            Log.d("DEBUG", "Verification Request: " + new Gson().toJson(verifyRequest));
-
-            // Make API call to verify code
-            authService.verifyRegistration(verifyRequest).enqueue(new Callback<AuthResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<AuthResponse> call, @NonNull Response<AuthResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        String message = response.body().getMessage();
-                        Toast.makeText(VerifyActivity.this, "Xác thực thành công: " + message, Toast.LENGTH_LONG).show();
-
-                        // Clear SharedPreferences
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.remove("email");
-                        editor.remove("message");
-                        editor.apply();
-
-                        // Navigate to LoginActivity
-                        Intent intent = new Intent(VerifyActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(VerifyActivity.this, "Xác thực thất bại. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<AuthResponse> call, Throwable t) {
-                    Toast.makeText(VerifyActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    t.printStackTrace();
-                }
-            });
+            if (isDestroyed) return;
+            verifyOtp();
         });
 
         // Resend code click listener
         if (tvResendCode != null) {
             tvResendCode.setOnClickListener(v -> {
-                if (countDownTimer != null) {
-                    countDownTimer.cancel();
-                }
-                startTimer();
-                Toast.makeText(this, "Mã xác thực mới đã được gửi", Toast.LENGTH_SHORT).show();
-                // TODO: Implement resend code API call if required
+                if (isDestroyed) return;
+                resendCode();
             });
         }
+    }
+
+    private void verifyOtp() {
+        // Combine OTP digits
+        String code = etOtp1.getText().toString() +
+                etOtp2.getText().toString() +
+                etOtp3.getText().toString() +
+                etOtp4.getText().toString() +
+                etOtp5.getText().toString() +
+                etOtp6.getText().toString();
+
+        // Validate OTP
+        if (code.length() != 6) {
+            Toast.makeText(this, "Vui lòng nhập đủ 6 chữ số mã xác thực", Toast.LENGTH_SHORT).show();
+            etOtp1.requestFocus();
+            return;
+        }
+
+        // Get email from SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
+        String email = sharedPreferences.getString("email", null);
+
+        if (email == null) {
+            Toast.makeText(this, "Không tìm thấy email. Vui lòng đăng ký lại.", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // Create verification request
+        VerificationRequest verifyRequest = new VerificationRequest(email, code);
+        AuthApi authService = RetrofitClient.getAuthService(this);
+
+        Log.d(TAG, "Verification Request: " + new Gson().toJson(verifyRequest));
+
+        // Make API call to verify code
+        authService.verifyRegistration(verifyRequest).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<AuthResponse> call, @NonNull Response<AuthResponse> response) {
+                if (isDestroyed) return;
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String message = response.body().getMessage();
+                    Toast.makeText(VerifyActivity.this, "Xác thực thành công: " + message, Toast.LENGTH_LONG).show();
+
+                    // Clear SharedPreferences
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove("email");
+                    editor.remove("message");
+                    editor.apply();
+
+                    // Navigate to LoginActivity
+                    Intent intent = new Intent(VerifyActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(VerifyActivity.this, "Xác thực thất bại. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
+                if (isDestroyed) return;
+                Toast.makeText(VerifyActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                t.printStackTrace();
+            }
+        });
+    }
+
+    private void resendCode() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        startTimer();
+        Toast.makeText(this, "Mã xác thực mới đã được gửi", Toast.LENGTH_SHORT).show();
+        // TODO: Implement resend code API call if required
     }
 
     private void setupOtpInputs() {
@@ -164,13 +191,15 @@ public class VerifyActivity extends AppCompatActivity {
 
                 @Override
                 public void afterTextChanged(Editable s) {
+                    if (isDestroyed) return;
+
                     if (s.length() == 1) {
-                        // Chuyển focus sang ô tiếp theo
+                        // Move focus to next field
                         if (index < otpFields.length - 1) {
                             otpFields[index + 1].requestFocus();
                         }
                     } else if (s.length() == 0) {
-                        // Quay lại ô trước nếu xóa
+                        // Move focus to previous field when deleting
                         if (index > 0) {
                             otpFields[index - 1].requestFocus();
                         }
@@ -181,9 +210,17 @@ public class VerifyActivity extends AppCompatActivity {
     }
 
     private void startTimer() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+
         countDownTimer = new CountDownTimer(TIMER_DURATION, TIMER_INTERVAL) {
             @Override
             public void onTick(long millisUntilFinished) {
+                if (isDestroyed) {
+                    cancel();
+                    return;
+                }
                 long minutes = (millisUntilFinished / 1000) / 60;
                 long seconds = (millisUntilFinished / 1000) % 60;
                 String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
@@ -192,6 +229,7 @@ public class VerifyActivity extends AppCompatActivity {
 
             @Override
             public void onFinish() {
+                if (isDestroyed) return;
                 tvTimer.setText("00:00");
                 tvResendCode.setEnabled(true);
             }
@@ -200,9 +238,10 @@ public class VerifyActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        isDestroyed = true;
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
+        super.onDestroy();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.femobile.ui.auth;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -49,6 +50,7 @@ public class SecondActivity extends AppCompatActivity {
         }
     };
 
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +71,8 @@ public class SecondActivity extends AppCompatActivity {
             if (bound && musicService.getCurrentSong() != null) {
                 Intent intent = new Intent(SecondActivity.this, SongDetailActivity.class);
                 intent.putExtra("songId", musicService.getCurrentSong().getId());
+                intent.putExtra("currentSong", musicService.getCurrentSong());
+                intent.putExtra("isPlaying", musicService.isPlaying());
                 startActivity(intent);
                 overridePendingTransition(R.anim.slide_in_up, R.anim.stay);
             }
@@ -97,6 +101,14 @@ public class SecondActivity extends AppCompatActivity {
             }
             return false;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (bound) {
+            updateMiniPlayer();
+        }
     }
 
     private void setUpViewPager() {
