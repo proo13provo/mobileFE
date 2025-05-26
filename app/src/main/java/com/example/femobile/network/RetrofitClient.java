@@ -44,6 +44,7 @@ public class RetrofitClient {
     public static AuthApi getAuthService(Context context) {
         return getClient(context).create(AuthApi.class);
     }
+
     private static OkHttpClient getUnsafeOkHttpClient(Context context) {
         try {
             TrustManager[] trustAllCerts = new TrustManager[]{

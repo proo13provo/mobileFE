@@ -55,5 +55,8 @@
 
     <string name="track_cover">track cover</string>
 
+    <string name="attribution_tag_music_player">femobile_music_player</string>
+    <string name="attribution_tag_music_service">femobile_music_service</string>
+
 </resources>
 

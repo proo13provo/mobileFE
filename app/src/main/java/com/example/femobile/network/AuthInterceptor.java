@@ -3,6 +3,8 @@ package com.example.femobile.network;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -14,6 +16,7 @@ public class AuthInterceptor implements Interceptor {
     public AuthInterceptor(Context context) {
         this.context = context;
     }
+    @NonNull
     @Override
     public Response intercept(Chain chain) throws IOException {
         // Lấy access token từ SharedPreferences

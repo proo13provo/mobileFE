@@ -1,11 +1,13 @@
 package com.example.femobile.service.api;
 
-
 import com.example.femobile.model.request.SongRequest.Song;
+import com.example.femobile.model.request.SongRequest.SongIdsRequest;
 import com.example.femobile.model.response.SongResponse;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface SongApi {
@@ -15,4 +17,7 @@ public interface SongApi {
 
     @GET("open/search")
     Call<SongResponse> searchSongs(@Query("keyword") String keyword);
+
+    @POST("open/nextSong")
+    Call<Song> getNextSong(@Body SongIdsRequest songIdsRequest);
 }

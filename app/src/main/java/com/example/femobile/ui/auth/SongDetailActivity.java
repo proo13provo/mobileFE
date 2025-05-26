@@ -35,6 +35,8 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.femobile.R;
 import com.example.femobile.model.request.SongRequest.Song;
+import com.example.femobile.model.request.SongRequest.SongIdsRequest;
+import com.example.femobile.model.response.SongResponse;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.service.MusicService;
 import com.example.femobile.service.api.SongApi;
@@ -64,7 +66,8 @@ public class SongDetailActivity extends AppCompatActivity {
     private MusicService musicService;
     private boolean bound = false;
     private boolean isDestroyed = false;
-
+    private List<String> playedSongIds = new ArrayList<>();
+    private int currentSongIndex = -1;
     private final ActivityResultLauncher<String[]> requestPermissionLauncher =
         registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
             boolean allGranted = true;
@@ -85,25 +88,29 @@ public class SongDetailActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (isDestroyed) return;
-            
+
             Log.d(TAG, "Service connected");
             MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
             musicService = binder.getService();
             bound = true;
-            
+
             Song songFromIntent = getIntent().getParcelableExtra("currentSong");
             boolean wasPlaying = getIntent().getBooleanExtra("isPlaying", false);
-            
+
             if (songFromIntent != null) {
                 Log.d(TAG, "Found song from intent: " + songFromIntent.getTitle());
                 currentSong = songFromIntent;
+                if (playedSongIds.isEmpty()) {
+                    playedSongIds.add(currentSong.getId());
+                    currentSongIndex = 0;
+                }
                 runOnUiThread(() -> {
                     if (!isDestroyed) {
                         updateUI(currentSong);
                         updatePlayPauseButton();
                     }
                 });
-                
+
                 if (wasPlaying && !musicService.isPlaying()) {
                     Log.d(TAG, "Resuming playback from mini player");
                     musicService.resumePlayback();
@@ -112,7 +119,7 @@ public class SongDetailActivity extends AppCompatActivity {
                 Log.d(TAG, "Playing song after service connection: " + currentSong.getTitle());
                 musicService.playSong(currentSong);
             }
-            
+
             if (!isDestroyed) {
                 handler.post(updateTimeRunnable);
             }
@@ -142,6 +149,8 @@ public class SongDetailActivity extends AppCompatActivity {
         currentTime = findViewById(R.id.currentTime);
         totalTime = findViewById(R.id.totalTime);
         seekBar = findViewById(R.id.seekBar);
+        ImageButton nextButton = findViewById(R.id.nextButton);
+        ImageButton prevButton = findViewById(R.id.prevButton);
 
         // Initialize handler for updating time
         handler = new Handler(Looper.getMainLooper());
@@ -161,7 +170,7 @@ public class SongDetailActivity extends AppCompatActivity {
         // Get songId from intent
         songId = getIntent().getStringExtra("songId");
         Song songFromIntent = getIntent().getParcelableExtra("currentSong");
-        
+
         if (songFromIntent != null) {
             Log.d(TAG, "Using song from intent: " + songFromIntent.getTitle());
             currentSong = songFromIntent;
@@ -179,7 +188,7 @@ public class SongDetailActivity extends AppCompatActivity {
 
         backButton.setOnClickListener(v -> {
             if (isDestroyed) return;
-            
+
             Intent intent = new Intent(SongDetailActivity.this, SecondActivity.class);
             intent.putExtra("showMiniPlayer", true);
             intent.putExtra("currentSong", currentSong);
@@ -195,16 +204,41 @@ public class SongDetailActivity extends AppCompatActivity {
                 togglePlayPause();
             }
         });
+
+        nextButton.setOnClickListener(v -> {
+            if (!isDestroyed) {
+                playNextSong();
+            }
+        });
+
+        prevButton.setOnClickListener(v -> {
+            if (!isDestroyed) {
+                playPreviousSong();
+            }
+        });
     }
 
     private void startMusicService() {
         if (isDestroyed) return;
-        
+
         Log.d(TAG, "Starting music service");
-        Intent intent = new Intent(this, MusicService.class);
+
+        // Tạo attribution context nếu Android 12+
+        Context serviceContext = this;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                serviceContext = createAttributionContext("femobile_music_player");
+                Log.d(TAG, "Created attribution context with tag: femobile_music_player");
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to create attribution context, using default", e);
+            }
+        }
+
+        Intent intent = new Intent(serviceContext, MusicService.class);
         startService(intent);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
+
 
     private void setupSeekBar() {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -238,7 +272,7 @@ public class SongDetailActivity extends AppCompatActivity {
 
     private void loadSongDetails() {
         if (isDestroyed) return;
-        
+
         if (getIntent().getParcelableExtra("currentSong") != null) {
             Log.d(TAG, "Using song from intent, skipping API call");
             return;
@@ -249,18 +283,18 @@ public class SongDetailActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<Song> call, @NonNull Response<Song> response) {
                 if (isDestroyed) return;
-                
+
                 if (response.isSuccessful() && response.body() != null) {
                     currentSong = response.body();
                     Log.d(TAG, "Song details loaded: " + currentSong.getTitle());
                     Log.d(TAG, "Media URL: " + currentSong.getMediaUrl());
-                    
+
                     runOnUiThread(() -> {
                         if (!isDestroyed) {
                             updateUI(currentSong);
                         }
                     });
-                    
+
                     if (bound) {
                         Log.d(TAG, "Service bound, playing song");
                         musicService.playSong(currentSong);
@@ -293,7 +327,7 @@ public class SongDetailActivity extends AppCompatActivity {
 
     private void updateUI(Song song) {
         if (isDestroyed) return;
-        
+
         songTitle.setText(song.getTitle());
         artistName.setText(song.getSinger());
 
@@ -314,7 +348,7 @@ public class SongDetailActivity extends AppCompatActivity {
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                         if (isDestroyed) return false;
-                        
+
                         if (resource instanceof BitmapDrawable) {
                             Bitmap bitmap = ((BitmapDrawable) resource).getBitmap();
                             Palette.from(bitmap).generate(palette -> {
@@ -324,8 +358,8 @@ public class SongDetailActivity extends AppCompatActivity {
                                             int dominantColor = palette.getDominantColor(getResources().getColor(R.color.dark_red));
                                             int vibrantColor = palette.getVibrantColor(dominantColor);
                                             findViewById(R.id.rootLayout).setBackgroundColor(vibrantColor);
-                                            int textColor = isColorDark(vibrantColor) ? 
-                                                getResources().getColor(R.color.white) : 
+                                            int textColor = isColorDark(vibrantColor) ?
+                                                getResources().getColor(R.color.white) :
                                                 getResources().getColor(R.color.black);
                                             songTitle.setTextColor(textColor);
                                             artistName.setTextColor(textColor);
@@ -345,7 +379,7 @@ public class SongDetailActivity extends AppCompatActivity {
 
     private void togglePlayPause() {
         if (isDestroyed) return;
-        
+
         if (currentSong == null) {
             Log.e(TAG, "No song to play");
             Toast.makeText(this, "Không có bài hát để phát", Toast.LENGTH_SHORT).show();
@@ -400,10 +434,141 @@ public class SongDetailActivity extends AppCompatActivity {
     }
 
     private boolean isColorDark(int color) {
-        double darkness = 1 - (0.299 * android.graphics.Color.red(color) + 
-                             0.587 * android.graphics.Color.green(color) + 
+        double darkness = 1 - (0.299 * android.graphics.Color.red(color) +
+                             0.587 * android.graphics.Color.green(color) +
                              0.114 * android.graphics.Color.blue(color)) / 255;
         return darkness >= 0.5;
+    }
+
+    private void playNextSong() {
+        if (isDestroyed) return;
+
+        // Nếu danh sách rỗng, thêm id bài hát hiện tại vào
+        if (playedSongIds.isEmpty() && currentSong != null) {
+            playedSongIds.add(currentSong.getId());
+            currentSongIndex = 0;
+        }
+
+        // Nếu đang ở giữa danh sách, chỉ phát lại bài tiếp theo trong list
+        if (currentSongIndex < playedSongIds.size() - 1) {
+            currentSongIndex++;
+            String nextSongId = playedSongIds.get(currentSongIndex);
+
+            SongApi songApi = RetrofitClient.getApiService(this);
+            songApi.getSong(nextSongId).enqueue(new Callback<Song>() {
+                @Override
+                public void onResponse(@NonNull Call<Song> call, @NonNull Response<Song> response) {
+                    if (isDestroyed) return;
+                    if (response.isSuccessful() && response.body() != null) {
+                        Song nextSong = response.body();
+                        currentSong = nextSong;
+                        runOnUiThread(() -> {
+                            if (!isDestroyed) {
+                                updateUI(nextSong);
+                            }
+                        });
+                        if (bound && musicService != null) {
+                            musicService.playSong(nextSong);
+                        }
+                    } else {
+                        Toast.makeText(SongDetailActivity.this, "Không thể tải bài hát tiếp theo!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Song> call, @NonNull Throwable t) {
+                    if (!isDestroyed) {
+                        Toast.makeText(SongDetailActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            return;
+        }
+
+        // Nếu đang ở cuối list, gọi API lấy bài mới
+        Log.d(TAG, "Requesting next song with playedSongIds: " + playedSongIds);
+
+        SongApi songApi = RetrofitClient.getApiService(this);
+        SongIdsRequest request = new SongIdsRequest(new ArrayList<>(playedSongIds));
+
+        songApi.getNextSong(request).enqueue(new Callback<Song>() {
+            @Override
+            public void onResponse(@NonNull Call<Song> call, @NonNull Response<Song> response) {
+                Log.d(TAG, "Next song API response code: " + response.code());
+                if (isDestroyed) return;
+
+                if (response.isSuccessful() && response.body() != null) {
+                    Song nextSong = response.body();
+                    currentSong = nextSong;
+                    playedSongIds.add(nextSong.getId());
+                    currentSongIndex = playedSongIds.size() - 1;
+                    runOnUiThread(() -> {
+                        if (!isDestroyed) {
+                            updateUI(nextSong);
+                        }
+                    });
+                    if (bound && musicService != null) {
+                        musicService.playSong(nextSong);
+                    }
+                } else {
+                    Log.e(TAG, "Failed to get next song: " + response.code());
+                    if (!isDestroyed) {
+                        Toast.makeText(SongDetailActivity.this, "Không thể tải bài hát tiếp theo", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Song> call, @NonNull Throwable t) {
+                Log.e(TAG, "Error getting next song", t);
+                if (!isDestroyed) {
+                    Toast.makeText(SongDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void playPreviousSong() {
+        if (isDestroyed) return;
+
+        // Nếu đang ở bài đầu tiên hoặc chưa có bài nào thì không làm gì
+        if (currentSongIndex <= 0 || playedSongIds.isEmpty()) {
+            Toast.makeText(this, "Không có bài trước!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Lùi lại 1 vị trí
+        currentSongIndex--;
+        String prevSongId = playedSongIds.get(currentSongIndex);
+
+        SongApi songApi = RetrofitClient.getApiService(this);
+        songApi.getSong(prevSongId).enqueue(new Callback<Song>() {
+            @Override
+            public void onResponse(@NonNull Call<Song> call, @NonNull Response<Song> response) {
+                if (isDestroyed) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    Song prevSong = response.body();
+                    currentSong = prevSong;
+                    runOnUiThread(() -> {
+                        if (!isDestroyed) {
+                            updateUI(prevSong);
+                        }
+                    });
+                    if (bound && musicService != null) {
+                        musicService.playSong(prevSong);
+                    }
+                } else {
+                    Toast.makeText(SongDetailActivity.this, "Không thể tải bài hát trước!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Song> call, @NonNull Throwable t) {
+                if (!isDestroyed) {
+                    Toast.makeText(SongDetailActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override

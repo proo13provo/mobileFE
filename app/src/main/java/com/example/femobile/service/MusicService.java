@@ -25,11 +25,14 @@ public class MusicService extends Service {
     private static final String TAG = "MusicService";
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "MusicServiceChannel";
+    private static final String ATTRIBUTION_TAG = "femobile_music_service";
+
     private final IBinder binder = new MusicBinder();
     private MediaPlayer mediaPlayer;
     private Song currentSong;
     private boolean isPlaying = false;
     private boolean isPrepared = false;
+    private Context attributionContext;
 
     public class MusicBinder extends Binder {
         public MusicService getService() {
@@ -40,6 +43,20 @@ public class MusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Tạo attribution context cho Android 12+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                attributionContext = createAttributionContext("femobile_music_service");
+                Log.d(TAG, "Attribution context created with tag: femobile_music_service");
+            } catch (Exception e) {
+                Log.w(TAG, "Failed to create attribution context, using default context", e);
+                attributionContext = this;
+            }
+        } else {
+            attributionContext = this;
+        }
+
         createNotificationChannel();
         Log.d(TAG, "MusicService created");
     }
@@ -62,11 +79,15 @@ public class MusicService extends Service {
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID,
-                "Music Service Channel",
-                NotificationManager.IMPORTANCE_LOW
+                    CHANNEL_ID,
+                    "Music Service Channel",
+                    NotificationManager.IMPORTANCE_LOW
             );
-            NotificationManager manager = getSystemService(NotificationManager.class);
+            channel.setDescription("Channel for music playback notifications");
+
+            // Sử dụng attribution context khi có thể
+            NotificationManager manager = (NotificationManager)
+                    attributionContext.getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
@@ -74,29 +95,34 @@ public class MusicService extends Service {
     }
 
     private Notification createNotification() {
-        Intent notificationIntent = new Intent(this, SongDetailActivity.class);
+        Intent notificationIntent = new Intent(attributionContext, SongDetailActivity.class);
         if (currentSong != null) {
             notificationIntent.putExtra("songId", currentSong.getId());
+            notificationIntent.putExtra("currentSong", currentSong);
+            notificationIntent.putExtra("isPlaying", isPlaying);
         }
+
         PendingIntent pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE
+                attributionContext,
+                0,
+                notificationIntent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(currentSong != null ? currentSong.getTitle() : "Music Player")
-            .setContentText(currentSong != null ? currentSong.getSinger() : "No song playing")
-            .setSmallIcon(R.drawable.ic_music_note)
-            .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build();
+        return new NotificationCompat.Builder(attributionContext, CHANNEL_ID)
+                .setContentTitle(currentSong != null ? currentSong.getTitle() : "Music Player")
+                .setContentText(currentSong != null ? currentSong.getSinger() : "No song playing")
+                .setSmallIcon(R.drawable.ic_music_note)
+                .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setOngoing(isPlaying)
+                .setShowWhen(false)
+                .build();
     }
 
     public void playSong(Song song) {
         Log.d(TAG, "Attempting to play song: " + song.getTitle());
-        
+
         if (currentSong != null && currentSong.getId().equals(song.getId())) {
             Log.d(TAG, "Same song, toggling play/pause");
             if (isPlaying) {
@@ -109,7 +135,7 @@ public class MusicService extends Service {
 
         stopPlayback();
         currentSong = song;
-        
+
         try {
             Log.d(TAG, "Creating new MediaPlayer");
             mediaPlayer = new MediaPlayer();
@@ -122,13 +148,17 @@ public class MusicService extends Service {
             }
 
             Log.d(TAG, "Setting data source: " + mediaUrl);
-            
-            // Set audio stream type
-            mediaPlayer.setAudioStreamType(android.media.AudioManager.STREAM_MUSIC);
-            
-            // Set data source
+
+            // Set AudioAttributes thay vì setAudioStreamType
+            android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build();
+            mediaPlayer.setAudioAttributes(audioAttributes);
+
+            // Set data source trực tiếp từ URL
             mediaPlayer.setDataSource(mediaUrl);
-            
+
             mediaPlayer.setOnPreparedListener(mp -> {
                 Log.d(TAG, "MediaPlayer prepared");
                 isPrepared = true;
@@ -147,11 +177,13 @@ public class MusicService extends Service {
                 isPlaying = false;
                 isPrepared = false;
                 stopForeground(true);
-                stopSelf();
             });
 
             mediaPlayer.setOnErrorListener((mp, what, extra) -> {
-                Log.e(TAG, "MediaPlayer error: " + what + ", " + extra);
+                Log.e(TAG, "MediaPlayer error: what=" + what + ", extra=" + extra);
+                String errorMsg = getMediaPlayerErrorMessage(what, extra);
+                Log.e(TAG, "Error details: " + errorMsg);
+
                 isPlaying = false;
                 isPrepared = false;
                 stopForeground(true);
@@ -160,11 +192,45 @@ public class MusicService extends Service {
 
             Log.d(TAG, "Starting async preparation");
             mediaPlayer.prepareAsync();
-            
+
         } catch (IOException e) {
             Log.e(TAG, "Error preparing MediaPlayer", e);
             stopPlayback();
+        } catch (SecurityException e) {
+            Log.e(TAG, "Security error accessing media URL", e);
+            stopPlayback();
         }
+    }
+
+    private String getMediaPlayerErrorMessage(int what, int extra) {
+        String whatStr = "Unknown";
+        String extraStr = "Unknown";
+
+        switch (what) {
+            case MediaPlayer.MEDIA_ERROR_UNKNOWN:
+                whatStr = "MEDIA_ERROR_UNKNOWN";
+                break;
+            case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                whatStr = "MEDIA_ERROR_SERVER_DIED";
+                break;
+        }
+
+        switch (extra) {
+            case MediaPlayer.MEDIA_ERROR_IO:
+                extraStr = "MEDIA_ERROR_IO";
+                break;
+            case MediaPlayer.MEDIA_ERROR_MALFORMED:
+                extraStr = "MEDIA_ERROR_MALFORMED";
+                break;
+            case MediaPlayer.MEDIA_ERROR_UNSUPPORTED:
+                extraStr = "MEDIA_ERROR_UNSUPPORTED";
+                break;
+            case MediaPlayer.MEDIA_ERROR_TIMED_OUT:
+                extraStr = "MEDIA_ERROR_TIMED_OUT";
+                break;
+        }
+
+        return "what: " + whatStr + " (" + what + "), extra: " + extraStr + " (" + extra + ")";
     }
 
     public void pausePlayback() {
@@ -173,14 +239,15 @@ public class MusicService extends Service {
             try {
                 mediaPlayer.pause();
                 isPlaying = false;
-                stopForeground(true);
+                // Cập nhật notification thay vì stop foreground
+                startForeground(NOTIFICATION_ID, createNotification());
                 Log.d(TAG, "Playback paused successfully");
             } catch (IllegalStateException e) {
                 Log.e(TAG, "Error pausing MediaPlayer", e);
             }
         } else {
-            Log.d(TAG, "Cannot pause: mediaPlayer=" + (mediaPlayer != null) + 
-                      ", isPrepared=" + isPrepared + ", isPlaying=" + isPlaying);
+            Log.d(TAG, "Cannot pause: mediaPlayer=" + (mediaPlayer != null) +
+                    ", isPrepared=" + isPrepared + ", isPlaying=" + isPlaying);
         }
     }
 
@@ -196,8 +263,8 @@ public class MusicService extends Service {
                 Log.e(TAG, "Error resuming MediaPlayer", e);
             }
         } else {
-            Log.d(TAG, "Cannot resume: mediaPlayer=" + (mediaPlayer != null) + 
-                      ", isPrepared=" + isPrepared + ", isPlaying=" + isPlaying);
+            Log.d(TAG, "Cannot resume: mediaPlayer=" + (mediaPlayer != null) +
+                    ", isPrepared=" + isPrepared + ", isPlaying=" + isPlaying);
         }
     }
 
@@ -217,13 +284,12 @@ public class MusicService extends Service {
                 isPlaying = false;
                 isPrepared = false;
                 stopForeground(true);
-                stopSelf();
             }
         }
     }
 
     public boolean isPlaying() {
-        return isPlaying;
+        return isPlaying && mediaPlayer != null && isPrepared;
     }
 
     public Song getCurrentSong() {
@@ -256,6 +322,7 @@ public class MusicService extends Service {
         if (mediaPlayer != null && isPrepared) {
             try {
                 mediaPlayer.seekTo(position);
+                Log.d(TAG, "Seeked to position: " + position);
             } catch (IllegalStateException e) {
                 Log.e(TAG, "Error seeking MediaPlayer", e);
             }
@@ -265,7 +332,7 @@ public class MusicService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "MusicService being destroyed");
-        super.onDestroy();
         stopPlayback();
+        super.onDestroy();
     }
-} 
+}
