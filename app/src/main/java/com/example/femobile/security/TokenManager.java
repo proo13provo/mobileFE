@@ -21,14 +21,12 @@ public class TokenManager {
     private static final String KEY_TOKEN_EXPIRATION = "tokenExpirationTime";
     private static final long TOKEN_EXPIRATION_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-    private final Context context;
     private final SharedPreferences sharedPreferences;
     private final AuthApi authService;
     private boolean isRefreshing = false;
     private OnTokenRefreshListener currentRefreshListener;
 
     public TokenManager(Context context) {
-        this.context = context;
         this.sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         this.authService = RetrofitClient.getAuthService(context);
     }

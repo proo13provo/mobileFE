@@ -15,10 +15,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -34,13 +31,12 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.femobile.R;
+import com.example.femobile.databinding.SongdetailBinding;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.request.SongRequest.SongIdsRequest;
-import com.example.femobile.model.response.SongResponse;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.service.MusicService;
 import com.example.femobile.service.api.SongApi;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,11 +49,8 @@ import retrofit2.Response;
 public class SongDetailActivity extends AppCompatActivity {
     private static final String TAG = "SongDetailActivity";
     private static final int PERMISSION_REQUEST_CODE = 123;
-    private TextView songTitle, artistName, currentTime, totalTime;
-    private ImageView albumArt;
-    private ImageButton backButton;
-    private FloatingActionButton playPauseButton;
-    private SeekBar seekBar;
+    
+    private SongdetailBinding binding;
     private String songId;
     private Song currentSong;
     private Handler handler;
@@ -69,60 +62,13 @@ public class SongDetailActivity extends AppCompatActivity {
     private List<String> playedSongIds = new ArrayList<>();
     private int currentSongIndex = -1;
     private final ActivityResultLauncher<String[]> requestPermissionLauncher =
-        registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-            boolean allGranted = true;
-            for (Boolean isGranted : permissions.values()) {
-                if (!isGranted) {
-                    allGranted = false;
-                    break;
-                }
-            }
-            if (allGranted && !isDestroyed) {
-                startMusicService();
-            } else if (!isDestroyed) {
-                Toast.makeText(this, "Cần cấp quyền để phát nhạc", Toast.LENGTH_SHORT).show();
-            }
-        });
+        registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::handlePermissionResult);
 
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (isDestroyed) return;
-
-            Log.d(TAG, "Service connected");
-            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
-            musicService = binder.getService();
-            bound = true;
-
-            Song songFromIntent = getIntent().getParcelableExtra("currentSong");
-            boolean wasPlaying = getIntent().getBooleanExtra("isPlaying", false);
-
-            if (songFromIntent != null) {
-                Log.d(TAG, "Found song from intent: " + songFromIntent.getTitle());
-                currentSong = songFromIntent;
-                if (playedSongIds.isEmpty()) {
-                    playedSongIds.add(currentSong.getId());
-                    currentSongIndex = 0;
-                }
-                runOnUiThread(() -> {
-                    if (!isDestroyed) {
-                        updateUI(currentSong);
-                        updatePlayPauseButton();
-                    }
-                });
-
-                if (wasPlaying && !musicService.isPlaying()) {
-                    Log.d(TAG, "Resuming playback from mini player");
-                    musicService.resumePlayback();
-                }
-            } else if (currentSong != null) {
-                Log.d(TAG, "Playing song after service connection: " + currentSong.getTitle());
-                musicService.playSong(currentSong);
-            }
-
-            if (!isDestroyed) {
-                handler.post(updateTimeRunnable);
-            }
+            handleServiceConnection(service);
         }
 
         @Override
@@ -138,22 +84,54 @@ public class SongDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.songdetail);
+        binding = SongdetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        // Initialize views
-        songTitle = findViewById(R.id.songTitle);
-        artistName = findViewById(R.id.artistName);
-        albumArt = findViewById(R.id.albumArt);
-        backButton = findViewById(R.id.backButton);
-        playPauseButton = findViewById(R.id.playPauseButton);
-        currentTime = findViewById(R.id.currentTime);
-        totalTime = findViewById(R.id.totalTime);
-        seekBar = findViewById(R.id.seekBar);
-        ImageButton nextButton = findViewById(R.id.nextButton);
-        ImageButton prevButton = findViewById(R.id.prevButton);
+        initializeViews();
+        setupClickListeners();
+        setupSeekBar();
+        initializeHandler();
+        
+        handleIntentData();
+    }
 
-        // Initialize handler for updating time
+    private void initializeViews() {
         handler = new Handler(Looper.getMainLooper());
+    }
+
+    private void setupClickListeners() {
+        binding.backButton.setOnClickListener(v -> handleBackButtonClick());
+        binding.playPauseButton.setOnClickListener(v -> {
+            if (!isDestroyed) {
+                togglePlayPause();
+            }
+        });
+        binding.nextButton.setOnClickListener(v -> {
+            if (!isDestroyed) {
+                playNextSong();
+            }
+        });
+        binding.prevButton.setOnClickListener(v -> {
+            if (!isDestroyed) {
+                playPreviousSong();
+            }
+        });
+    }
+
+    private void handleBackButtonClick() {
+        if (isDestroyed) return;
+
+        Intent intent = new Intent(SongDetailActivity.this, SecondActivity.class);
+        intent.putExtra("showMiniPlayer", true);
+        intent.putExtra("currentSong", currentSong);
+        intent.putExtra("isPlaying", musicService != null && musicService.isPlaying());
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
+        overridePendingTransition(R.anim.stay, R.anim.slide_out_down);
+        finish();
+    }
+
+    private void initializeHandler() {
         updateTimeRunnable = new Runnable() {
             @Override
             public void run() {
@@ -163,11 +141,9 @@ public class SongDetailActivity extends AppCompatActivity {
                 }
             }
         };
+    }
 
-        // Set up SeekBar
-        setupSeekBar();
-
-        // Get songId from intent
+    private void handleIntentData() {
         songId = getIntent().getStringExtra("songId");
         Song songFromIntent = getIntent().getParcelableExtra("currentSong");
 
@@ -185,67 +161,73 @@ public class SongDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Error: No song selected", Toast.LENGTH_SHORT).show();
             finish();
         }
+    }
 
-        backButton.setOnClickListener(v -> {
-            if (isDestroyed) return;
+    private void handlePermissionResult(java.util.Map<String, Boolean> permissions) {
+        boolean allGranted = permissions.values().stream().allMatch(isGranted -> isGranted);
+        if (allGranted && !isDestroyed) {
+            startMusicService();
+        } else if (!isDestroyed) {
+            Toast.makeText(this, "Cần cấp quyền để phát nhạc", Toast.LENGTH_SHORT).show();
+        }
+    }
 
-            Intent intent = new Intent(SongDetailActivity.this, SecondActivity.class);
-            intent.putExtra("showMiniPlayer", true);
-            intent.putExtra("currentSong", currentSong);
-            intent.putExtra("isPlaying", musicService != null && musicService.isPlaying());
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            startActivity(intent);
-            overridePendingTransition(R.anim.stay, R.anim.slide_out_down);
-            finish();
-        });
+    private void handleServiceConnection(IBinder service) {
+        Log.d(TAG, "Service connected");
+        MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+        musicService = binder.getService();
+        bound = true;
 
-        playPauseButton.setOnClickListener(v -> {
+        Song songFromIntent = getIntent().getParcelableExtra("currentSong");
+        boolean wasPlaying = getIntent().getBooleanExtra("isPlaying", false);
+
+        if (songFromIntent != null) {
+            handleSongFromIntent(songFromIntent, wasPlaying);
+        } else if (currentSong != null) {
+            Log.d(TAG, "Playing song after service connection: " + currentSong.getTitle());
+            musicService.playSong(currentSong);
+        }
+
+        if (!isDestroyed) {
+            handler.post(updateTimeRunnable);
+        }
+    }
+
+    private void handleSongFromIntent(Song song, boolean wasPlaying) {
+        Log.d(TAG, "Found song from intent: " + song.getTitle());
+        currentSong = song;
+        if (playedSongIds.isEmpty()) {
+            playedSongIds.add(currentSong.getId());
+            currentSongIndex = 0;
+        }
+        runOnUiThread(() -> {
             if (!isDestroyed) {
-                togglePlayPause();
+                updateUI(currentSong);
+                updatePlayPauseButton();
             }
         });
 
-        nextButton.setOnClickListener(v -> {
-            if (!isDestroyed) {
-                playNextSong();
-            }
-        });
-
-        prevButton.setOnClickListener(v -> {
-            if (!isDestroyed) {
-                playPreviousSong();
-            }
-        });
+        if (wasPlaying && !musicService.isPlaying()) {
+            Log.d(TAG, "Resuming playback from mini player");
+            musicService.resumePlayback();
+        }
     }
 
     private void startMusicService() {
         if (isDestroyed) return;
 
         Log.d(TAG, "Starting music service");
-
-        // Tạo attribution context nếu Android 12+
-        Context serviceContext = this;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                serviceContext = createAttributionContext("femobile_music_player");
-                Log.d(TAG, "Created attribution context with tag: femobile_music_player");
-            } catch (Exception e) {
-                Log.w(TAG, "Failed to create attribution context, using default", e);
-            }
-        }
-
-        Intent intent = new Intent(serviceContext, MusicService.class);
+        Intent intent = new Intent(this, MusicService.class);
         startService(intent);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-
     private void setupSeekBar() {
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        binding.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser && musicService != null && !isDestroyed) {
-                    currentTime.setText(formatTime(progress));
+                    binding.currentTime.setText(formatTime(progress));
                 }
             }
 
@@ -262,7 +244,7 @@ public class SongDetailActivity extends AppCompatActivity {
                 if (musicService != null && !isDestroyed) {
                     int progress = seekBar.getProgress();
                     musicService.seekTo(progress);
-                    currentTime.setText(formatTime(progress));
+                    binding.currentTime.setText(formatTime(progress));
                     isUserSeeking = false;
                     handler.post(updateTimeRunnable);
                 }
@@ -328,8 +310,8 @@ public class SongDetailActivity extends AppCompatActivity {
     private void updateUI(Song song) {
         if (isDestroyed) return;
 
-        songTitle.setText(song.getTitle());
-        artistName.setText(song.getSinger());
+        binding.songTitle.setText(song.getTitle());
+        binding.artistName.setText(song.getSinger());
 
         String imageUrl = song.getImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -357,12 +339,12 @@ public class SongDetailActivity extends AppCompatActivity {
                                         if (!isDestroyed) {
                                             int dominantColor = palette.getDominantColor(getResources().getColor(R.color.dark_red));
                                             int vibrantColor = palette.getVibrantColor(dominantColor);
-                                            findViewById(R.id.rootLayout).setBackgroundColor(vibrantColor);
+                                            binding.rootLayout.setBackgroundColor(vibrantColor);
                                             int textColor = isColorDark(vibrantColor) ?
                                                 getResources().getColor(R.color.white) :
                                                 getResources().getColor(R.color.black);
-                                            songTitle.setTextColor(textColor);
-                                            artistName.setTextColor(textColor);
+                                            binding.songTitle.setTextColor(textColor);
+                                            binding.artistName.setTextColor(textColor);
                                         }
                                     });
                                 }
@@ -371,9 +353,9 @@ public class SongDetailActivity extends AppCompatActivity {
                         return false;
                     }
                 })
-                .into(albumArt);
+                .into(binding.albumArt);
         } else {
-            albumArt.setImageResource(R.drawable.ic_music_note);
+            binding.albumArt.setImageResource(R.drawable.ic_music_note);
         }
     }
 
@@ -413,10 +395,10 @@ public class SongDetailActivity extends AppCompatActivity {
             int currentPosition = musicService.getCurrentPosition();
             int duration = musicService.getDuration();
             if (duration > 0) {
-                currentTime.setText(formatTime(currentPosition));
-                totalTime.setText(formatTime(duration));
-                seekBar.setMax(duration);
-                seekBar.setProgress(currentPosition);
+                binding.currentTime.setText(formatTime(currentPosition));
+                binding.totalTime.setText(formatTime(duration));
+                binding.seekBar.setMax(duration);
+                binding.seekBar.setProgress(currentPosition);
             }
         }
     }
@@ -429,7 +411,7 @@ public class SongDetailActivity extends AppCompatActivity {
 
     private void updatePlayPauseButton() {
         if (bound && !isDestroyed) {
-            playPauseButton.setImageResource(musicService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
+            binding.playPauseButton.setImageResource(musicService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
         }
     }
 
@@ -579,6 +561,7 @@ public class SongDetailActivity extends AppCompatActivity {
             bound = false;
         }
         handler.removeCallbacks(updateTimeRunnable);
+        binding = null;
         super.onDestroy();
     }
 }

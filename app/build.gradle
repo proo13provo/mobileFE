@@ -44,6 +44,8 @@ android {
 
     buildFeatures {
         buildConfig true
+        dataBinding true
+        viewBinding true
     }
 
     buildToolsVersion '35.0.0'
@@ -66,7 +68,8 @@ dependencies {
     implementation libs.activity.v160
     implementation libs.material
     implementation libs.gridlayout
-    implementation libs.media3.ui// or the latest version
+    implementation libs.media3.ui
+    implementation libs.googleid// or the latest version
 
     // Testing
     testImplementation libs.junit
@@ -83,4 +86,6 @@ dependencies {
     implementation libs.lifecycle.viewmodel
     implementation libs.lifecycle.livedata
     implementation libs.palette
+
+    implementation libs.play.services.auth
 }

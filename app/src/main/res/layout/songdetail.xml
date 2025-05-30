@@ -5,7 +5,7 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_red">
+    android:background="@color/black">
 
     <!-- Top Toolbar -->
 
@@ -71,7 +71,6 @@
             android:layout_height="300dp"
             android:contentDescription="@string/album_art"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_ronbo"
 
             />
 

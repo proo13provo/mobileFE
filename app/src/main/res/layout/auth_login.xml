@@ -118,7 +118,7 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="32dp"
                 android:backgroundTint="#FFFF"
-                android:text="ĐĂNG NHẬP"
+                android:text="@string/login"
                 android:layout_gravity="center"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -188,7 +188,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đã có tài khoản? "
+                    android:text="@string/no_account_yet"
                     android:textColor="#AAAAAA"
                     android:textSize="14sp" />
 
@@ -196,7 +196,7 @@
                     android:id="@+id/tv_sign_UP"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đăng Kí"
+                    android:text="@string/register"
                     android:textColor="#7FFFD4"
                     android:textSize="14sp"
                     android:textStyle="bold" />

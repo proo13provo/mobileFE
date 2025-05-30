@@ -1,286 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!--suppress ALL -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
-    android:fillViewport="true">
+    android:background="@color/black"
+    tools:context=".MainActivity">
 
-
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@drawable/themecolor"
-        >
+        android:layout_height="match_parent">
 
-        <!-- Header Settings -->
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp">
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
 
-            <ImageView
-                android:id="@+id/setting"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_alignParentEnd="true"
-                android:contentDescription="Settings"
-                android:src="@drawable/settings"
-                android:layout_marginEnd="8dp" />
-        </RelativeLayout>
-
-        <!-- TextView nằm ngay dưới setting -->
-        <TextView
-            android:id="@+id/greeting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Good evening"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <!-- Grid layout -->
-        <GridLayout
-            android:id="@+id/gridArtists"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:columnCount="2"
-            android:rowCount="3"
-            android:orientation="horizontal">
-
-            <!-- Một ô -->
-            <!-- Lặp lại các ô này -->
+            <!-- Top section: Profile and tabs -->
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="61dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="4dp"
-                android:background="@drawable/grid_item_bg"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/image11" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:gravity="center_vertical"
-                    android:text="Machine Gun Kelly"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="61dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="4dp"
-                android:background="@drawable/grid_item_bg"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/image11" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:gravity="center_vertical"
-                    android:text="Machine Gun Kelly"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="61dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="4dp"
-                android:background="@drawable/grid_item_bg"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/image11" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:gravity="center_vertical"
-                    android:text="Machine Gun Kelly"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="61dp"
-                android:layout_columnWeight="1"
-                android:layout_margin="4dp"
-                android:background="@drawable/grid_item_bg"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/image11" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:gravity="center_vertical"
-                    android:text="Machine Gun Kelly"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <!-- Thêm nhiều ô tương tự tại đây -->
-        </GridLayout>
-
-        <!-- Recently Played -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Recently Played"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:scrollbars="none">
-            <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:layout_marginTop="20dp">
 
-                <!-- Một album -->
+                <!-- Profile and filter tabs -->
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="16dp">
-                    <ImageView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:src="@drawable/image11"
-                        android:scaleType="centerCrop" />
-                    <TextView
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:text="Dance Gavin"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-                </LinearLayout>
-                <!-- Thêm nhiều album khác tại đây -->
-            </LinearLayout>
-        </HorizontalScrollView>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-        <!-- Các danh sách khác như Recently Played (test, test1...) -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Top Albums"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:scrollbars="none">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <!-- Album -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="16dp">
-                    <ImageView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:src="@drawable/image11"
-                        android:scaleType="centerCrop" />
+                    <!-- Profile circle -->
                     <TextView
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:text="Sleeping With Sirens"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-                </LinearLayout>
-            </LinearLayout>
-        </HorizontalScrollView>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Top Albums"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/circle_brown"
+                        android:text="H"
+                        android:textColor="@color/white"
+                        android:gravity="center"
+                        android:textSize="18sp"/>
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:scrollbars="none">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <!-- Album -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="16dp">
-                    <ImageView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:src="@drawable/image11"
-                        android:scaleType="centerCrop" />
-                    <TextView
-                        android:layout_width="100dp"
+                    <!-- Filter tabs -->
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Sleeping With Sirens"
-                        android:textColor="#FFFFFF"
-                        android:textSize="12sp"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
+                        android:scrollbars="none"
+                        android:layout_marginStart="12dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/pill_green"
+                                android:paddingHorizontal="24dp"
+                                android:paddingVertical="8dp"
+                                android:text="Tất cả"
+                                android:textColor="@color/black"
+                                android:textSize="14sp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/pill_gray"
+                                android:paddingHorizontal="24dp"
+                                android:paddingVertical="8dp"
+                                android:text="Nhạc"
+                                android:layout_marginStart="8dp"
+                                android:textColor="@color/white"
+                                android:textSize="14sp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/pill_dark_gray"
+                                android:paddingHorizontal="24dp"
+                                android:paddingVertical="8dp"
+                                android:text="Podcast"
+                                android:layout_marginStart="8dp"
+                                android:textColor="@color/white"
+                                android:textSize="14sp"/>
+                        </LinearLayout>
+                    </HorizontalScrollView>
                 </LinearLayout>
 
+                <!-- Playlists section -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/playlist_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="2"
+                    tools:itemCount="5"
+                    tools:listitem="@layout/item_playlist"/>
             </LinearLayout>
-        </HorizontalScrollView>
 
-        <!-- Thêm bao nhiêu danh sách tùy ý -->
-    </LinearLayout>
-</ScrollView>
+            <!-- Top Playlists section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tuyển tập hàng đầu của bạn"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="16dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/top_playlists_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_top_playlist"/>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Fixed bottom player -->
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
