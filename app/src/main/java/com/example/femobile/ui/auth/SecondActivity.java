@@ -31,8 +31,6 @@ public class SecondActivity extends AppCompatActivity {
     private ImageView btnPlay;
     private MusicService musicService;
     private boolean bound = false;
-    EditText user;
-    EditText passW;
     BottomNavigationView navigationView;
     ViewPager2 mViewpage;
 

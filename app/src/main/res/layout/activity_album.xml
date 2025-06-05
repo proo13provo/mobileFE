@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Artist Header - Chuẩn xác theo thiết kế -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:background="#000000">
+
+                <!-- Background ảnh mờ -->
+
+                <!-- Avatar nghệ sĩ nổi bật -->
+
+                <ImageView
+                    android:id="@+id/headerBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0.5"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/obito" />
+
+                <ImageView
+                    android:id="@+id/artistAvatar"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="40dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/obito"
+                    android:background="@drawable/circle_background"
+                    android:elevation="4dp" />
+
+                <!-- Tên nghệ sĩ -->
+                <TextView
+                    android:id="@+id/artistName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/artistAvatar"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="8dp"
+                    android:text="Obito"
+                    android:textColor="#FFFFFF"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <!-- Lượt nghe hàng tháng -->
+                <TextView
+                    android:id="@+id/monthlyListeners1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/artistName"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="4dp"
+                    android:text="1,5 Tr người nghe hàng tháng"
+                    android:textColor="#CCCCCC"
+                    android:textSize="14sp"
+                    />
+
+                <!-- Nút Đang theo dõi -->
+
+            </RelativeLayout>
+
+            <!-- Divider - Chuẩn theo thiết kế -->
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#000000"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp">
+
+                <!-- Người nghe hàng tháng -->
+
+                <!-- Hàng nút: ảnh, theo dõi, ba chấm, shuffle, play -->
+                <TextView
+                    android:id="@+id/monthlyListeners"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:text="@string/album"
+                    android:textColor="#B3B3B3"
+                    android:textSize="14sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:weightSum="6">
+
+                    <!-- Ảnh nhỏ -->
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/sample_album" />
+
+
+                    <!-- Icon shuffle -->
+
+                    <!-- Nút Play -->
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:layout_weight="0.5"
+                        android:src="@drawable/ic_more_vert"
+                        android:tint="#FFFFFF"
+                        tools:ignore="UseAppTint" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:layout_weight="0.5"
+                        android:src="@drawable/ic_shuffle"
+                        android:tint="#FFFFFF"
+                        tools:ignore="UseAppTint" />
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#1ED760"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_play" />
+                </LinearLayout>
+
+                <!-- Dòng "Nghe bản nhạc mới" -->
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#2A2A2A"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- New Music Section - Chuẩn theo thiết kế -->
+
+            <FrameLayout
+                android:id="@+id/fragmentContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"/>
+
+
+
+            <!-- Popular Section - Chuẩn theo thiết kế -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phổ biến"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation - Chuẩn theo thiết kế -->
+</RelativeLayout>

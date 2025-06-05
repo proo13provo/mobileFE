@@ -31,7 +31,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class searchItemActivity extends AppCompatActivity implements SongAdapter.OnItemClickListener {
+public class searchItemActivity extends AppCompatActivity {
 
     TextView cancelBtn, tvNoResults;
     EditText etSearch;
@@ -39,6 +39,7 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
     SongAdapter songAdapter;
     AlbumAdapter albumAdapter;
     ImageView ivClear;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,9 +60,20 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
         rvAlbums.setAdapter(albumAdapter);
         rvAlbums.setLayoutManager(new LinearLayoutManager(this));
 
-        songAdapter.setOnItemClickListener(this);
+        songAdapter.setOnItemClickListener(song -> {
+            Intent intent = new Intent(this, SongDetailActivity.class);
+            intent.putExtra("songId", song.getId());
+            startActivity(intent);
+        });
+        albumAdapter.setOnItemClickListener(album -> {
+            Intent intent = new Intent(this, ActivityAlbum.class);
+            intent.putExtra("albumId", album.getId());
+            startActivity(intent);
+        });
 
-        cancelBtn.setOnClickListener(v -> {finish();});
+        cancelBtn.setOnClickListener(v -> {
+            finish();
+        });
 
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -94,7 +106,8 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
         });
 
     }
-    private void searchSongs(String keyword){
+
+    private void searchSongs(String keyword) {
         SongApi songApi = RetrofitClient.getApiService(this);
         songApi.searchSongs(keyword).enqueue(new Callback<SearchResponse>() {
             @Override
@@ -134,6 +147,7 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
                 }
             }
 
+
             @Override
             public void onFailure(@NonNull Call<SearchResponse> call, @NonNull Throwable t) {
                 songAdapter.submitList(new ArrayList<>());
@@ -142,12 +156,6 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
             }
         });
     }
-
-    @Override
-    public void onItemClick(Song song) {
-        Intent intent = new Intent(this, SongDetailActivity.class);
-        intent.putExtra("songId", song.getId());
-        startActivity(intent);
-    }
 }
+
 
