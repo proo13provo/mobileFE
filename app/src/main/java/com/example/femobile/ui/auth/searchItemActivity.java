@@ -19,7 +19,7 @@ import com.example.femobile.adapter.AlbumAdapter;
 import com.example.femobile.adapter.SongAdapter;
 import com.example.femobile.model.request.SongRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
-import com.example.femobile.model.response.SongResponse;
+import com.example.femobile.model.response.SearchResponse;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.service.api.SongApi;
 
@@ -96,9 +96,9 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
     }
     private void searchSongs(String keyword){
         SongApi songApi = RetrofitClient.getApiService(this);
-        songApi.searchSongs(keyword).enqueue(new Callback<SongResponse>() {
+        songApi.searchSongs(keyword).enqueue(new Callback<SearchResponse>() {
             @Override
-            public void onResponse(@NonNull Call<SongResponse> call, @NonNull Response<SongResponse> response) {
+            public void onResponse(@NonNull Call<SearchResponse> call, @NonNull Response<SearchResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Song> songs = response.body().getData();
                     List<Album> albums = response.body().getAlbumsList();
@@ -135,7 +135,7 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
             }
 
             @Override
-            public void onFailure(@NonNull Call<SongResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<SearchResponse> call, @NonNull Throwable t) {
                 songAdapter.submitList(new ArrayList<>());
                 albumAdapter.submitList(new ArrayList<>());
                 tvNoResults.setVisibility(View.VISIBLE);
