@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName; // Cần import này
 import com.example.femobile.model.request.SongRequest.Song;
 import java.util.List;
 
-public class SongResponse {
+public class SearchResponse {
     private boolean success;
     private String message;
     @SerializedName("songs") // <-- Ánh xạ key "songs" từ JSON vào trường data
