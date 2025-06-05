@@ -21,6 +21,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.service.MusicService;
 import com.bumptech.glide.Glide;
+import com.example.femobile.ui.PremiumActivity;
 
 public class SecondActivity extends AppCompatActivity {
     private ConstraintLayout miniPlayer;
@@ -82,8 +83,8 @@ public class SecondActivity extends AppCompatActivity {
         btnPlay.setOnClickListener(v -> togglePlayPause());
 
         // Bind to MusicService
-        Intent intent = new Intent(this, MusicService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        Intent serviceIntent = new Intent(this, MusicService.class);
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
 
         setUpViewPager();
 
@@ -97,6 +98,10 @@ public class SecondActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.menu_library) {
                 mViewpage.setCurrentItem(2);
+                return true;
+            } else if (id == R.id.menu_premium) {
+                Intent premiumIntent = new Intent(SecondActivity.this, PremiumActivity.class);
+                startActivity(premiumIntent);
                 return true;
             }
             return false;
