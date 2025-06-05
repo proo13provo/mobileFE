@@ -68,6 +68,7 @@ public class searchItemActivity extends AppCompatActivity {
         albumAdapter.setOnItemClickListener(album -> {
             Intent intent = new Intent(this, ActivityAlbum.class);
             intent.putExtra("albumId", album.getId());
+            intent.putExtra("coverUrl", album.getCoverUrl());
             startActivity(intent);
         });
 

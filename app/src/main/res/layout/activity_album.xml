@@ -37,6 +37,15 @@
                     android:scaleType="centerCrop"
                     android:src="@drawable/obito" />
 
+                <ImageButton
+                    android:id="@+id/btn_back2"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="25dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_back"
+                    app:tint="#FFFFFF" />
+
                 <ImageView
                     android:id="@+id/artistAvatar"
                     android:layout_width="160dp"
