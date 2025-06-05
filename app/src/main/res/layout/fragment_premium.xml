@@ -25,7 +25,7 @@
                 android:layout_height="32dp"
                 android:src="@drawable/ic_premium_crown"
                 android:layout_marginEnd="12dp"
-                android:tint="#FFD700" />
+                app:tint="#FFD700" />
 
             <TextView
                 android:layout_width="0dp"
@@ -114,7 +114,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_no_ads"
                     android:layout_marginEnd="16dp"
-                    android:tint="#1DB954" />
+                    app:tint="#1DB954" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -154,7 +154,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_download"
                     android:layout_marginEnd="16dp"
-                    android:tint="#1DB954" />
+                    app:tint="#1DB954" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -194,7 +194,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_high_quality"
                     android:layout_marginEnd="16dp"
-                    android:tint="#1DB954" />
+                    app:tint="#1DB954" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -234,7 +234,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_skip"
                     android:layout_marginEnd="16dp"
-                    android:tint="#1DB954" />
+                    app:tint="#1DB954" />
 
                 <LinearLayout
                     android:layout_width="0dp"

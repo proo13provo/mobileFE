@@ -51,8 +51,6 @@
             android:name=".ui.auth.SongDetailActivity"
             android:exported="false" />
 
-        <!--suppress AndroidDomInspection -->
-        <activity android:name=".ui.auth.fragment.PremiumFragment" />
 
         <!--suppress AndroidDomInspection -->
         <service
