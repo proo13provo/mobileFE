@@ -151,7 +151,6 @@ public class HomeFragment extends Fragment {
                     tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
                         @Override
                         public void onTokenRefreshSuccess() {
-                            Log.d(TAG, "Token refresh successful, retrying history load");
                             // Retry loading history with new token
                             loadRecentListeningHistory();
                         }
@@ -163,14 +162,12 @@ public class HomeFragment extends Fragment {
                         }
                     });
                 } else {
-                    Log.e(TAG, "Failed to load history: " + response.code());
                     Toast.makeText(getContext(), "Không thể tải lịch sử nghe nhạc", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ListeningHistoryResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "API call failed", t);
                 Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
