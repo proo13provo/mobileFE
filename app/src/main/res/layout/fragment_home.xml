@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
+    android:background="#121212"
     tools:context=".MainActivity">
 
     <androidx.core.widget.NestedScrollView
@@ -110,16 +110,23 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginTop="24dp">
-
                 <TextView
+                    android:id="@+id/recent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tuyển tập hàng đầu của bạn"
+                    android:text="@string/recent"
                     android:textColor="@color/white"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:paddingHorizontal="16dp"
-                    android:paddingBottom="16dp"/>
+                    android:paddingBottom="8dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSongs1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="8dp"
+                    tools:listitem="@layout/item_song" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/top_playlists_recycler"

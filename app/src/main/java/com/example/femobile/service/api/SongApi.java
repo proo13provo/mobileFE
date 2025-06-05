@@ -2,11 +2,13 @@ package com.example.femobile.service.api;
 
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.request.SongRequest.SongIdsRequest;
+import com.example.femobile.model.response.ListeningHistoryResponse;
 import com.example.femobile.model.response.SearchResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
@@ -20,4 +22,7 @@ public interface SongApi {
 
     @POST("open/nextSong")
     Call<Song> getNextSong(@Body SongIdsRequest songIdsRequest);
+
+    @GET("user/listeningHistory/getAllListeningHistory")
+    Call<ListeningHistoryResponse> listeningHistory(@Header("Authorization") String token);
 }
