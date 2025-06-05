@@ -16,7 +16,7 @@ public interface SongApi {
     Call<Song> getSong(@Query("songId") String songId);
 
     @GET("open/search")
-    Call<SongResponse> searchSongs(@Query("keyword") String keyword);
+    Call<SearchResponse> searchSongs(@Query("keyword") String keyword);
 
     @POST("open/nextSong")
     Call<Song> getNextSong(@Body SongIdsRequest songIdsRequest);
