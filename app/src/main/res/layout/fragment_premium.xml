@@ -263,7 +263,7 @@
 
         </LinearLayout>
 
-        <!-- Pricing Plans -->
+        <!-- Premium Plans Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -275,42 +275,27 @@
 
         <!-- Individual Plan -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardIndividualPlan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-            android:backgroundTint="#1E1E1E">
+            android:backgroundTint="#282828">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Premium Individual"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1 tài khoản Premium"
-                        android:textColor="#B3B3B3"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
+                    android:text="Cá nhân"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -318,50 +303,41 @@
                     android:text="59.000đ/tháng"
                     android:textColor="#1DB954"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="8dp" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1 tài khoản"
+                    android:textColor="#B3B3B3"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
 
         <!-- Family Plan -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardFamilyPlan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-            android:backgroundTint="#1E1E1E">
+            android:backgroundTint="#282828">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Premium Family"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="6 tài khoản Premium cho gia đình"
-                        android:textColor="#B3B3B3"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
+                    android:text="Gia đình"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -369,50 +345,41 @@
                     android:text="79.000đ/tháng"
                     android:textColor="#1DB954"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="8dp" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tối đa 6 tài khoản"
+                    android:textColor="#B3B3B3"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
 
         <!-- Student Plan -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardStudentPlan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-            android:backgroundTint="#1E1E1E">
+            android:backgroundTint="#282828">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Premium Student"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Giảm 50% cho sinh viên đại học"
-                        android:textColor="#B3B3B3"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
+                    android:text="Sinh viên"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -420,10 +387,16 @@
                     android:text="29.500đ/tháng"
                     android:textColor="#1DB954"
                     android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="8dp" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1 tài khoản"
+                    android:textColor="#B3B3B3"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
 
         <!-- Free Trial Button -->
@@ -436,7 +409,7 @@
             android:textStyle="bold"
             android:background="@drawable/premium_button_bg"
             android:backgroundTint="#1DB954"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="16dp" />
 
         <TextView
             android:layout_width="match_parent"
