@@ -49,6 +49,7 @@
     <string name="home">Trang chủ</string>
     <string name="search">Tìm kiếm</string>
     <string name="li">Thư viện</string>
+    <String name="Prenium">Prenium</String>
 
     <string name="default_web_client_id">705243783215-ei795tnvk2891u4pqvftiea6h80rjb1h.apps.googleusercontent.com</string>
     <string name="search_icon">Search Icon</string>
