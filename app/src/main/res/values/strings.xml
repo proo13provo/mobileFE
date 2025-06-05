@@ -57,6 +57,8 @@
 
     <string name="attribution_tag_music_player">femobile_music_player</string>
     <string name="attribution_tag_music_service">femobile_music_service</string>
+    <string name="Song">"Song● \n"</string>
+    <string name="album">Album● \n</string>
 
 </resources>
 

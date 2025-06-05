@@ -15,7 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.femobile.R;
+import com.example.femobile.adapter.AlbumAdapter;
 import com.example.femobile.adapter.SongAdapter;
+import com.example.femobile.model.request.SongRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.response.SongResponse;
 import com.example.femobile.network.RetrofitClient;
@@ -33,8 +35,9 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
 
     TextView cancelBtn, tvNoResults;
     EditText etSearch;
-    RecyclerView rvSongs;
-    SongAdapter adapter;
+    RecyclerView rvSongs, rvAlbums;
+    SongAdapter songAdapter;
+    AlbumAdapter albumAdapter;
     ImageView ivClear;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +48,18 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
         etSearch = findViewById(R.id.etSearch);
         tvNoResults = findViewById(R.id.tvNoResults);
         rvSongs = findViewById(R.id.rvSongs);
+        rvAlbums = findViewById(R.id.rvAlbums);
         ivClear = findViewById(R.id.ivClear);
 
-        adapter = new SongAdapter();
-        rvSongs.setAdapter(adapter);
-        rvSongs.setLayoutManager(new LinearLayoutManager(this));
+        songAdapter = new SongAdapter();
+        albumAdapter = new AlbumAdapter();
 
-        adapter.setOnItemClickListener(this);
+        rvSongs.setAdapter(songAdapter);
+        rvSongs.setLayoutManager(new LinearLayoutManager(this));
+        rvAlbums.setAdapter(albumAdapter);
+        rvAlbums.setLayoutManager(new LinearLayoutManager(this));
+
+        songAdapter.setOnItemClickListener(this);
 
         cancelBtn.setOnClickListener(v -> {finish();});
 
@@ -76,7 +84,7 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
                 } else {
                     // Ẩn nút xóa và xóa danh sách khi không có text
                     ivClear.setVisibility(View.GONE);
-                    adapter.submitList(new ArrayList<>());
+                    songAdapter.submitList(new ArrayList<>());
                     tvNoResults.setVisibility(View.GONE); // Ẩn cả thông báo không tìm thấy kết quả
                 }
             }
@@ -93,22 +101,43 @@ public class searchItemActivity extends AppCompatActivity implements SongAdapter
             public void onResponse(@NonNull Call<SongResponse> call, @NonNull Response<SongResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Song> songs = response.body().getData();
+                    List<Album> albums = response.body().getAlbumsList();
+
+                    // Xử lý bài hát
                     if (songs != null && !songs.isEmpty()) {
-                        adapter.submitList(songs);
-                        tvNoResults.setVisibility(View.GONE);
+                        songAdapter.submitList(songs);
+                        rvSongs.setVisibility(View.VISIBLE);
                     } else {
-                        adapter.submitList(new ArrayList<>());
+                        songAdapter.submitList(new ArrayList<>());
+                        rvSongs.setVisibility(View.GONE);
+                    }
+
+                    // Xử lý album
+                    if (albums != null && !albums.isEmpty()) {
+                        albumAdapter.submitList(albums);
+                        rvAlbums.setVisibility(View.VISIBLE);
+                    } else {
+                        albumAdapter.submitList(new ArrayList<>());
+                        rvAlbums.setVisibility(View.GONE);
+                    }
+
+                    // Hiện thông báo nếu không có kết quả
+                    if ((songs == null || songs.isEmpty()) && (albums == null || albums.isEmpty())) {
                         tvNoResults.setVisibility(View.VISIBLE);
+                    } else {
+                        tvNoResults.setVisibility(View.GONE);
                     }
                 } else {
-                    adapter.submitList(new ArrayList<>());
+                    songAdapter.submitList(new ArrayList<>());
+                    albumAdapter.submitList(new ArrayList<>());
                     tvNoResults.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<SongResponse> call, @NonNull Throwable t) {
-                adapter.submitList(new ArrayList<>());
+                songAdapter.submitList(new ArrayList<>());
+                albumAdapter.submitList(new ArrayList<>());
                 tvNoResults.setVisibility(View.VISIBLE);
             }
         });
