@@ -21,7 +21,7 @@ public class PremiumFragment extends Fragment {
     private Button btnFreeTrial;
 
     public PremiumFragment() {
-        // Required empty public constructor
+
     }
 
     public static PremiumFragment newInstance() {
@@ -31,7 +31,7 @@ public class PremiumFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         return inflater.inflate(R.layout.fragment_premium, container, false);
     }
 
@@ -50,16 +50,16 @@ public class PremiumFragment extends Fragment {
 
     private void setupClickListeners() {
         btnUpgradePremium.setOnClickListener(v -> {
-            // Handle premium upgrade
+            // xử lý upgrade premium
             showPremiumUpgradeDialog();
         });
 
         btnFreeTrial.setOnClickListener(v -> {
-            // Handle free trial
+            // xử lý xài thử
             startFreeTrial();
         });
 
-        // Set up click listeners for pricing plans
+        // Set up click listeners cho pricing plans
         setupPricingPlanClickListeners();
     }
 
@@ -95,7 +95,7 @@ public class PremiumFragment extends Fragment {
     }
 
     private void showPremiumUpgradeDialog() {
-        // Create and show upgrade dialog
+        // tạo và hiển thị upgrade dialog
         if (getContext() != null) {
             androidx.appcompat.app.AlertDialog.Builder builder =
                     new androidx.appcompat.app.AlertDialog.Builder(getContext());
@@ -103,7 +103,7 @@ public class PremiumFragment extends Fragment {
             builder.setTitle("Nâng cấp Premium")
                     .setMessage("Bạn có muốn nâng cấp lên Spotify Premium để trải nghiệm âm nhạc không giới hạn?")
                     .setPositiveButton("Nâng cấp", (dialog, which) -> {
-                        // Handle upgrade action
+                        // xử lý upgrade action
                         startPremiumUpgrade();
                     })
                     .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
@@ -112,7 +112,7 @@ public class PremiumFragment extends Fragment {
     }
 
     private void startFreeTrial() {
-        // Handle free trial logic
+        // xử lý free trial logic
         Toast.makeText(getContext(),
                 "Bắt đầu dùng thử miễn phí 1 tháng!",
                 Toast.LENGTH_LONG).show();
@@ -133,7 +133,7 @@ public class PremiumFragment extends Fragment {
             builder.setTitle("Dùng thử miễn phí")
                     .setMessage("Bạn sẽ được sử dụng Premium miễn phí trong 1 tháng. Sau đó sẽ tự động gia hạn với giá 59.000đ/tháng. Bạn có thể hủy bất kỳ lúc nào.")
                     .setPositiveButton("Đồng ý", (dialog, which) -> {
-                        // Activate free trial
+                        // kích hoạt free trial
                         activateFreeTrial();
                     })
                     .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
@@ -147,7 +147,7 @@ public class PremiumFragment extends Fragment {
                 "Chúc mừng! Bạn đã kích hoạt thành công gói dùng thử Premium!",
                 Toast.LENGTH_LONG).show();
 
-        // Update UI to reflect premium status
+        // Update UI để hiển thị trạng thái premium
         // You might want to refresh the main activity or update user preferences
     }
 
