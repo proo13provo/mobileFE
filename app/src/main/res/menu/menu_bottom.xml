@@ -15,5 +15,5 @@
     <item
         android:id="@+id/menu_premium"
         android:title="@string/prenium"
-        android:icon="@drawable/ic_premium_crown"/>
+        android:icon="@drawable/logo_spotify_light"/>
 </menu>
