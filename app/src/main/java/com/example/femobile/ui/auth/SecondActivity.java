@@ -21,7 +21,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.service.MusicService;
 import com.bumptech.glide.Glide;
-import com.example.femobile.ui.PremiumActivity;
+import com.example.femobile.ui.auth.fragment.PremiumFragment;
 
 public class SecondActivity extends AppCompatActivity {
     private ConstraintLayout miniPlayer;
@@ -100,8 +100,7 @@ public class SecondActivity extends AppCompatActivity {
                 mViewpage.setCurrentItem(2);
                 return true;
             } else if (id == R.id.menu_premium) {
-                Intent premiumIntent = new Intent(SecondActivity.this, PremiumActivity.class);
-                startActivity(premiumIntent);
+                mViewpage.setCurrentItem(3);
                 return true;
             }
             return false;
