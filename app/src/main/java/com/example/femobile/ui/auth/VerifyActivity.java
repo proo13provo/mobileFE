@@ -38,6 +38,7 @@ public class VerifyActivity extends AppCompatActivity {
     private static final long TIMER_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
     private static final long TIMER_INTERVAL = 1000; // Update every second
     private boolean isDestroyed = false;
+    private boolean isButtonClicked = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,7 +79,8 @@ public class VerifyActivity extends AppCompatActivity {
         // Back button click listener
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
-                if (isDestroyed) return;
+                if (isDestroyed || isButtonClicked) return;
+                isButtonClicked = true;
                 Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
                 startActivity(intent);
                 finish();
@@ -87,14 +89,18 @@ public class VerifyActivity extends AppCompatActivity {
 
         // Verify button click listener
         btnVerify.setOnClickListener(v -> {
-            if (isDestroyed) return;
+            if (isDestroyed || isButtonClicked) return;
+            isButtonClicked = true;
+            btnVerify.setEnabled(false);
             verifyOtp();
         });
 
         // Resend code click listener
         if (tvResendCode != null) {
             tvResendCode.setOnClickListener(v -> {
-                if (isDestroyed) return;
+                if (isDestroyed || isButtonClicked) return;
+                isButtonClicked = true;
+                tvResendCode.setEnabled(false);
                 resendCode();
             });
         }
