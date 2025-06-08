@@ -15,6 +15,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
@@ -49,6 +51,8 @@ import retrofit2.Response;
 public class SongDetailActivity extends AppCompatActivity {
     private static final String TAG = "SongDetailActivity";
     private static final int PERMISSION_REQUEST_CODE = 123;
+    private static final int SWIPE_THRESHOLD = 100;
+    private static final int SWIPE_VELOCITY_THRESHOLD = 100;
     
     private SongdetailBinding binding;
     private String songId;
@@ -63,6 +67,7 @@ public class SongDetailActivity extends AppCompatActivity {
     private int currentSongIndex = -1;
     private final ActivityResultLauncher<String[]> requestPermissionLauncher =
         registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::handlePermissionResult);
+    private GestureDetector gestureDetector;
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -91,6 +96,7 @@ public class SongDetailActivity extends AppCompatActivity {
         setupClickListeners();
         setupSeekBar();
         initializeHandler();
+        setupGestureDetector();
         
         handleIntentData();
     }
@@ -551,6 +557,37 @@ public class SongDetailActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void setupGestureDetector() {
+        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null || e2 == null) return false;
+
+                float diffY = e2.getY() - e1.getY();
+                float diffX = e2.getX() - e1.getX();
+
+                if (Math.abs(diffY) > Math.abs(diffX)) {
+                    if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffY > 0) {
+                            // Swipe down detected
+                            handleBackButtonClick();
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (gestureDetector != null) {
+            return gestureDetector.onTouchEvent(event);
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
