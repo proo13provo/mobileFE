@@ -37,7 +37,6 @@ public class ActivityAlbum extends AppCompatActivity {
     private TextView albumName;
     private RecyclerView rvSongs;
     private SongAdapter songAdapter;
-    private List<Song> listSong = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

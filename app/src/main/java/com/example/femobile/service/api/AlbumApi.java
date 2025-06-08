@@ -11,7 +11,7 @@ import retrofit2.http.Query;
 
 public interface AlbumApi {
     @GET("user/album/getAlbums")
-    Call<List<Album>> getAlbums(String token);
+    Call<List<Album>> getAlbums(@Header("Authorization") String token);
 
     @GET("user/album/getAlbum")
     Call<Album> getAlbum(@Query("albumId") String albumId );
