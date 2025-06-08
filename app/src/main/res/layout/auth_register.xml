@@ -111,15 +111,6 @@
                 android:textColorHint="#AAAAAA" />
 
             <!-- Terms and Conditions Checkbox -->
-            <CheckBox
-                android:id="@+id/cb_terms"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:buttonTint="#7FFFD4"
-                android:text="Tôi đồng ý với Điều khoản dịch vụ và Chính sách riêng tư"
-                android:textColor="#AAAAAA"
-                android:textSize="14sp" />
 
             <!-- Register Button -->
             <Button
