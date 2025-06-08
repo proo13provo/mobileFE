@@ -61,6 +61,8 @@
     <string name="album">Album● \n</string>
     <string name="prenium">Premium</string>
     <string name="recent">Đã nghe gần đây</string>
+    <string name="yourplaylist">Danh sách phát của bạn</string>
+    <string name="albumDisplay">Album</string>
 
 </resources>
 

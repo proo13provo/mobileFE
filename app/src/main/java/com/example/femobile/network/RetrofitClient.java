@@ -6,6 +6,7 @@ import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import com.example.femobile.*;
+import com.example.femobile.service.api.AlbumApi;
 import com.example.femobile.service.api.AuthApi;
 import com.example.femobile.service.api.SongApi;
 
@@ -77,6 +78,9 @@ public class RetrofitClient {
     }
     public static SongApi getApiService(Context context) {
         return getClient(context).create(SongApi.class);
+    }
+    public static AlbumApi getApialbum(Context context){
+        return getClient(context).create(AlbumApi.class);
     }
 
 

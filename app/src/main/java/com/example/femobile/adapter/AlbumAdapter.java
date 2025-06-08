@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.femobile.R;
-import com.example.femobile.model.request.SongRequest.Album;
+import com.example.femobile.model.request.AlbumRequest.Album;
 
 import java.util.ArrayList;
 import java.util.List;

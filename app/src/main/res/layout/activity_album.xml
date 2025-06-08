@@ -59,7 +59,7 @@
 
                 <!-- Tên nghệ sĩ -->
                 <TextView
-                    android:id="@+id/artistName"
+                    android:id="@+id/albumName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/artistAvatar"
@@ -75,7 +75,7 @@
                     android:id="@+id/monthlyListeners1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/artistName"
+                    android:layout_below="@id/albumName"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="4dp"
                     android:text="1,5 Tr người nghe hàng tháng"
@@ -175,10 +175,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"/>
 
-
-
-            <!-- Popular Section - Chuẩn theo thiết kế -->
             <TextView
+                android:id="@+id/ListSong"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Phổ biến"
@@ -186,6 +184,14 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSongs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp"/>
         </LinearLayout>
     </ScrollView>
 

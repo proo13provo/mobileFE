@@ -5,11 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +46,8 @@ public class HomeFragment extends Fragment {
     private TokenManager tokenManager;
     private MusicService musicService;
     private boolean bound = false;
+    private Handler handler;
+    private static final long UPDATE_INTERVAL = 5000; // 5 seconds
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -61,14 +66,49 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Initialize Handler
+        handler = new Handler(Looper.getMainLooper());
         // Bind to MusicService
         Intent intent = new Intent(getActivity(), MusicService.class);
         getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // Start periodic updates
+        startPeriodicUpdates();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Stop periodic updates
+        stopPeriodicUpdates();
+    }
+
+    private void startPeriodicUpdates() {
+        // Remove any existing callbacks
+        handler.removeCallbacksAndMessages(null);
+        // Start periodic updates
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                loadRecentListeningHistory();
+                // Schedule next update
+                handler.postDelayed(this, UPDATE_INTERVAL);
+            }
+        }, UPDATE_INTERVAL);
+    }
+
+    private void stopPeriodicUpdates() {
+        handler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
+        stopPeriodicUpdates();
         if (bound) {
             getActivity().unbindService(serviceConnection);
             bound = false;
@@ -119,7 +159,6 @@ public class HomeFragment extends Fragment {
     private void loadRecentListeningHistory() {
         if (!tokenManager.hasValidTokens()) {
             Log.d(TAG, "No valid tokens found");
-            Toast.makeText(getContext(), "Vui lòng đăng nhập để xem lịch sử nghe nhạc", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -134,7 +173,12 @@ public class HomeFragment extends Fragment {
                     Log.d(TAG, "Received " + (historyItems != null ? historyItems.size() : 0) + " history items");
                     
                     if (historyItems != null && !historyItems.isEmpty()) {
-                        // Convert to list of songs and take only first 3
+                        // Show recent TextView and convert to list of songs and take only first 3
+                        View view = getView();
+                        if (view != null) {
+                            TextView recentTextView = view.findViewById(R.id.recent);
+                            recentTextView.setVisibility(View.VISIBLE);
+                        }
                         List<Song> songs = historyItems.stream()
                             .map(ListeningHistoryResponse.ListeningHistoryItem::getSongResponse)
                             .limit(3)
@@ -143,9 +187,15 @@ public class HomeFragment extends Fragment {
                         songAdapter.submitList(songs);
                     } else {
                         Log.d(TAG, "No history items found");
+                        // Hide recent TextView and clear the list
+                        View view = getView();
+                        if (view != null) {
+                            TextView recentTextView = view.findViewById(R.id.recent);
+                            recentTextView.setVisibility(View.GONE);
+                        }
                         songAdapter.submitList(new ArrayList<>());
                     }
-                } else if (response.code() == 401) {
+                } else {
                     Log.d(TAG, "Token expired, attempting to refresh");
                     // Token expired, try to refresh
                     tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
@@ -161,8 +211,6 @@ public class HomeFragment extends Fragment {
                             Toast.makeText(getContext(), "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
                         }
                     });
-                } else {
-                    Toast.makeText(getContext(), "Không thể tải lịch sử nghe nhạc", Toast.LENGTH_SHORT).show();
                 }
             }
 

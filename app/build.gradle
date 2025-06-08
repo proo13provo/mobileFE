@@ -69,7 +69,8 @@ dependencies {
     implementation libs.material
     implementation libs.gridlayout
     implementation libs.media3.ui
-    implementation libs.googleid// or the latest version
+    implementation libs.googleid
+    implementation libs.ext.junit// or the latest version
 
     // Testing
     testImplementation libs.junit

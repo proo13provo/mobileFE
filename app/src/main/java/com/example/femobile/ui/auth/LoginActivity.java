@@ -9,31 +9,24 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.femobile.BuildConfig;
 import com.example.femobile.databinding.AuthLoginBinding;
 import com.example.femobile.model.request.AuthRequest.LoginRequest;
 import com.example.femobile.model.response.AuthResponse;
 import com.example.femobile.network.RetrofitClient;
+import com.example.femobile.security.GoogleAuthManager;
 import com.example.femobile.service.api.AuthApi;
-
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements GoogleAuthManager.GoogleAuthCallback {
     private static final String TAG = "LoginActivity";
     private static final int RC_SIGN_IN = 100;
     private static final String PREF_NAME = "app_preferences";
     
     private AuthLoginBinding binding;
-    private GoogleSignInClient googleSignInClient;
+    private GoogleAuthManager googleAuthManager;
     private AuthApi authService;
 
     @Override
@@ -43,31 +36,27 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         initializeServices();
-        setupGoogleSignIn();
         setupClickListeners();
     }
 
     private void initializeServices() {
         authService = RetrofitClient.getAuthService(this);
-    }
-
-    private void setupGoogleSignIn() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(BuildConfig.CLIENT_ID)
-                .requestEmail()
-                .build();
-
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
+        googleAuthManager = new GoogleAuthManager(this, this);
     }
 
     private void setupClickListeners() {
         binding.btnGoogle.setOnClickListener(v -> startGoogleSignIn());
         binding.tvSignUP.setOnClickListener(v -> navigateToRegister());
         binding.btnLogin.setOnClickListener(v -> handleNormalLogin());
+        binding.btnBack.setOnClickListener(v -> backToMain());
+    }
+
+    private void backToMain() {
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
     }
 
     private void startGoogleSignIn() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
+        Intent signInIntent = googleAuthManager.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
@@ -120,36 +109,18 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                String idToken = account.getIdToken();
-                if (idToken != null) {
-                    sendGoogleIdTokenToServer(idToken);
-                }
-            } catch (ApiException e) {
-                Log.e(TAG, "Google sign in failed", e);
-                showError("Đăng nhập Google thất bại!");
-            }
+            googleAuthManager.handleSignInResult(data);
         }
     }
 
-    private void sendGoogleIdTokenToServer(String idToken) {
-        authService.loginWithGoogle(idToken).enqueue(new Callback<AuthResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<AuthResponse> call, @NonNull Response<AuthResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    saveTokensAndNavigate(response.body());
-                } else {
-                    showError("Đăng nhập Google thất bại!");
-                }
-            }
+    @Override
+    public void onGoogleAuthSuccess(AuthResponse response) {
+        saveTokensAndNavigate(response);
+    }
 
-            @Override
-            public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
-                showError("Lỗi: " + t.getMessage());
-            }
-        });
+    @Override
+    public void onGoogleAuthError(String error) {
+        showError(error);
     }
 
     private void saveTokensAndNavigate(AuthResponse authResponse) {

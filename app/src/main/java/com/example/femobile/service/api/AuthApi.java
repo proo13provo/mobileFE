@@ -32,6 +32,6 @@ public interface AuthApi {
 
     @POST("auth/google/callback")
     @FormUrlEncoded
-    Call<AuthResponse> loginWithGoogle(@Field("code") String authCode);
+    Call<AuthResponse> loginWithGoogle(@Field("code") String code);
 }
 

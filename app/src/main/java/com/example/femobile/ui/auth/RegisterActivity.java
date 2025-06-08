@@ -5,127 +5,176 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.femobile.R;
+import com.example.femobile.databinding.AuthRegisterBinding;
 import com.example.femobile.model.request.AuthRequest.RegisterRequest;
 import com.example.femobile.model.response.AuthResponse;
 import com.example.femobile.network.RetrofitClient;
+import com.example.femobile.security.GoogleAuthManager;
 import com.example.femobile.service.api.AuthApi;
-import com.google.gson.Gson;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RegisterActivity extends AppCompatActivity {
-    private Button btnRegister;
-    private EditText edtEmail, edtPassword, edtPasswordconFirm;
-    private ImageButton btnBack;
-    private TextView tvSignIn;
+public class RegisterActivity extends AppCompatActivity implements GoogleAuthManager.GoogleAuthCallback {
+    private static final String TAG = "RegisterActivity";
+    private static final int RC_SIGN_IN = 100;
+    
+    private AuthRegisterBinding binding;
+    private GoogleAuthManager googleAuthManager;
+    private AuthApi authService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.auth_register);
+        binding = AuthRegisterBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         
-        // Initialize views
-        btnRegister = findViewById(R.id.btn_register);
-        edtEmail = findViewById(R.id.et_email);
-        edtPassword = findViewById(R.id.et_password);
-        edtPasswordconFirm = findViewById(R.id.et_confirm_password);
-        btnBack = findViewById(R.id.btn_back);
-        tvSignIn = findViewById(R.id.tv_sign_in);
+        initializeServices();
+        setupClickListeners();
+    }
 
-        // Set up click listeners
-        tvSignIn.setOnClickListener(v -> {
+    private void initializeServices() {
+        authService = RetrofitClient.getAuthService(this);
+        googleAuthManager = new GoogleAuthManager(this, this);
+    }
+
+    private void setupClickListeners() {
+        binding.tvSignIn.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
         });
 
-        btnBack.setOnClickListener(v -> {
+        binding.btnBack.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
         });
 
-        btnRegister.setOnClickListener(v -> {
-            Log.d("DEBUG", "Register button clicked");
+        binding.btnRegister.setOnClickListener(v -> handleNormalRegister());
+        binding.btnGoogle.setOnClickListener(v -> startGoogleSignIn());
+    }
 
-            String email = edtEmail.getText().toString().trim();
-            String password = edtPassword.getText().toString();
-            String confirmPassword = edtPasswordconFirm.getText().toString();
+    private void handleNormalRegister() {
+        String email = binding.etEmail.getText().toString().trim();
+        String password = binding.etPassword.getText().toString();
+        String confirmPassword = binding.etConfirmPassword.getText().toString();
 
-            // Validate password match
-            if (!confirmPassword.equals(password)) {
-                edtPasswordconFirm.setError("Mật khẩu xác nhận không khớp");
-                edtPasswordconFirm.setBackgroundColor(Color.parseColor("#33FF0000"));
-                edtPasswordconFirm.requestFocus();
-                return;
-            } else {
-                edtPasswordconFirm.setError(null);
-                edtPasswordconFirm.setBackgroundResource(R.drawable.edittext_background);
-            }
+        // Validate password match
+        if (!confirmPassword.equals(password)) {
+            binding.etConfirmPassword.setError("Mật khẩu xác nhận không khớp");
+            binding.etConfirmPassword.setBackgroundColor(Color.parseColor("#33FF0000"));
+            binding.etConfirmPassword.requestFocus();
+            return;
+        } else {
+            binding.etConfirmPassword.setError(null);
+            binding.etConfirmPassword.setBackgroundResource(R.drawable.edittext_background);
+        }
 
-            // Validate empty fields
-            if(email.isEmpty()) {
-                edtEmail.setError("Vui lòng nhập email");
-                edtEmail.requestFocus();
-                return;
-            }
-            if(password.isEmpty()) {
-                edtPassword.setError("Vui lòng nhập mật khẩu");
-                edtPassword.requestFocus();
-                return;
-            }
+        // Validate empty fields
+        if(email.isEmpty()) {
+            binding.etEmail.setError("Vui lòng nhập email");
+            binding.etEmail.requestFocus();
+            return;
+        }
+        if(password.isEmpty()) {
+            binding.etPassword.setError("Vui lòng nhập mật khẩu");
+            binding.etPassword.requestFocus();
+            return;
+        }
 
-            // Create register request
-            RegisterRequest registerRequest = new RegisterRequest(email, password);
-            AuthApi authService = RetrofitClient.getAuthService(this);
-            
-            Log.d("DEBUG", "Email: " + email);
-            Log.d("DEBUG", "Password: " + password);
-            Log.d("DEBUG", "RegisterRequest: " + new Gson().toJson(registerRequest));
+        // Create register request
+        RegisterRequest registerRequest = new RegisterRequest(email, password);
+        
+        // Make API call
+        authService.register(registerRequest).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<AuthResponse> call, @NonNull Response<AuthResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String message = response.body().getMessage();
 
-            // Make API call
-            authService.register(registerRequest).enqueue(new Callback<AuthResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<AuthResponse> call, @NonNull Response<AuthResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        String message = response.body().getMessage();
+                    // Save data to SharedPreferences
+                    SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("message", message);
+                    editor.putString("email", email);
+                    editor.apply();
 
-                        // Save data to SharedPreferences
-                        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("message", message);
-                        editor.putString("email", email);
-                        editor.apply();
-
-                        Toast.makeText(RegisterActivity.this, "Đăng kí thành công! Vui lòng xác thực email", Toast.LENGTH_LONG).show();
-                        
-                        // Navigate to VerifyActivity
-                        Intent intent = new Intent(RegisterActivity.this, VerifyActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(RegisterActivity.this, "Đăng kí thất bại!", Toast.LENGTH_LONG).show();
-                    }
+                    Toast.makeText(RegisterActivity.this, "Đăng kí thành công! Vui lòng xác thực email", Toast.LENGTH_LONG).show();
+                    
+                    // Navigate to VerifyActivity
+                    Intent intent = new Intent(RegisterActivity.this, VerifyActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Đăng kí thất bại!", Toast.LENGTH_LONG).show();
                 }
+            }
 
-                @Override
-                public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
-                    Toast.makeText(RegisterActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    t.printStackTrace();
-                }
-            });
+            @Override
+            public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
+                Toast.makeText(RegisterActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                t.printStackTrace();
+            }
         });
+    }
+
+    private void startGoogleSignIn() {
+        Intent signInIntent = googleAuthManager.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            googleAuthManager.handleSignInResult(data);
+        }
+    }
+
+    @Override
+    public void onGoogleAuthSuccess(AuthResponse response) {
+        saveTokensAndNavigate(response);
+    }
+
+    @Override
+    public void onGoogleAuthError(String error) {
+        showError(error);
+    }
+
+    private void saveTokensAndNavigate(AuthResponse authResponse) {
+        SharedPreferences sharedPreferences = getSharedPreferences("app_preferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("accessToken", authResponse.getAccessToken());
+        editor.putString("refreshToken", authResponse.getRefreshToken());
+        editor.apply();
+
+        showSuccess("Đăng nhập thành công!");
+
+        Intent intent = new Intent(RegisterActivity.this, SecondActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void showError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showSuccess(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 }

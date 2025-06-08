@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.femobile.R;
 import com.example.femobile.adapter.AlbumAdapter;
 import com.example.femobile.adapter.SongAdapter;
-import com.example.femobile.model.request.SongRequest.Album;
+import com.example.femobile.model.request.AlbumRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.response.SearchResponse;
 import com.example.femobile.network.RetrofitClient;
@@ -69,6 +69,7 @@ public class searchItemActivity extends AppCompatActivity {
             Intent intent = new Intent(this, ActivityAlbum.class);
             intent.putExtra("albumId", album.getId());
             intent.putExtra("coverUrl", album.getCoverUrl());
+            intent.putExtra("albumTitle", album.getTitle());
             startActivity(intent);
         });
 
@@ -147,7 +148,6 @@ public class searchItemActivity extends AppCompatActivity {
                     tvNoResults.setVisibility(View.VISIBLE);
                 }
             }
-
 
             @Override
             public void onFailure(@NonNull Call<SearchResponse> call, @NonNull Throwable t) {

@@ -1,6 +1,6 @@
 package com.example.femobile.model.response;
 
-import com.example.femobile.model.request.SongRequest.Album;
+import com.example.femobile.model.request.AlbumRequest.Album;
 import com.google.gson.annotations.SerializedName; // Cần import này
 import com.example.femobile.model.request.SongRequest.Song;
 import java.util.List;

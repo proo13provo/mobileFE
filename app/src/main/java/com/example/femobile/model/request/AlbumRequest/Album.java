@@ -1,9 +1,16 @@
-package com.example.femobile.model.request.SongRequest;
+package com.example.femobile.model.request.AlbumRequest;
+
+import com.example.femobile.model.request.SongRequest.Song;
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 public class Album {
     private int id;
     private String title;
     private String coverUrl;
+    @SerializedName("songs")
+    private List<Song> listSong;
 
     public Album(int id, String title, String coverUrl) {
         this.id = id;
@@ -33,5 +40,12 @@ public class Album {
 
     public void setCoverUrl(String coverUrl) {
         this.coverUrl = coverUrl;
+    }
+    public List<Song> getListSong() {
+        return listSong;
+    }
+
+    public void setListSong(List<Song> listSong) {
+        this.listSong = listSong;
     }
 }

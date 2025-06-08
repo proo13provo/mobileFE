@@ -90,18 +90,6 @@
                         </LinearLayout>
                     </HorizontalScrollView>
                 </LinearLayout>
-
-                <!-- Playlists section -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/playlist_recycler"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:nestedScrollingEnabled="false"
-                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                    app:spanCount="2"
-                    tools:itemCount="5"
-                    tools:listitem="@layout/item_playlist"/>
             </LinearLayout>
 
             <!-- Top Playlists section -->
@@ -127,22 +115,41 @@
                     android:layout_height="match_parent"
                     android:paddingHorizontal="8dp"
                     tools:listitem="@layout/item_song" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/top_playlists_recycler"
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:itemCount="3"
-                    tools:listitem="@layout/item_top_playlist"/>
+                    android:layout_height="match_parent"
+                    android:text="@string/albumDisplay"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="8dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/yourplaylist"
+                    android:textColor="@color/white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="8dp"/>
+
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Fixed bottom player -->
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
