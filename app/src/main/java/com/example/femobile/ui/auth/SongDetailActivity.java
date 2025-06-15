@@ -50,7 +50,6 @@ import retrofit2.Response;
 
 public class SongDetailActivity extends AppCompatActivity {
     private static final String TAG = "SongDetailActivity";
-    private static final int PERMISSION_REQUEST_CODE = 123;
     private static final int SWIPE_THRESHOLD = 100;
     private static final int SWIPE_VELOCITY_THRESHOLD = 100;
     

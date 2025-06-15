@@ -8,10 +8,12 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.femobile.model.request.AlbumRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.response.ListeningHistoryResponse;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.security.TokenManager;
+import com.example.femobile.service.api.AlbumApi;
 import com.example.femobile.service.api.SongApi;
 
 import java.util.ArrayList;
@@ -27,11 +29,14 @@ public class HomeViewModel extends AndroidViewModel {
     private final MutableLiveData<List<Song>> recentSongs = new MutableLiveData<>();
     private final TokenManager tokenManager;
     private final SongApi songApi;
+    private final AlbumApi albumApi;
+
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
         tokenManager = new TokenManager(application);
         songApi = RetrofitClient.getApiService(application);
+        albumApi = RetrofitClient.getApialbum(application);
     }
 
     public LiveData<List<Song>> getRecentSongs() {
@@ -39,12 +44,10 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public void loadRecentListeningHistory() {
-        if (!tokenManager.hasValidTokens()) {
-            Log.d(TAG, "No valid tokens found");
+        String token = getValidBearerTokenOrNull();
+        if (token == null) {
             return;
         }
-
-        String token = "Bearer " + tokenManager.getValidAccessToken();
         
         songApi.listeningHistory(token).enqueue(new Callback<ListeningHistoryResponse>() {
             @Override
@@ -84,5 +87,37 @@ public class HomeViewModel extends AndroidViewModel {
                 Log.e(TAG, "Error loading listening history", t);
             }
         });
+    }
+    public void loadAlbum(){
+        String token = getValidBearerTokenOrNull();
+        if (token == null) {
+            return;
+        }
+        albumApi.getAlbums(token).enqueue(new Callback<List<Album>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Album>> call, @NonNull Response<List<Album>> response) {
+                if(response.isSuccessful()&& response.body() != null ){
+                    
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Album>> call, Throwable t) {
+
+            }
+        });
+    }
+    
+    private String getValidBearerTokenOrNull() {
+        if (!tokenManager.hasValidTokens()) {
+            Log.d(TAG, "No valid tokens found");
+            return null;
+        }
+        String accessToken = tokenManager.getValidAccessToken();
+        if (accessToken == null) {
+            Log.d(TAG, "No valid access token");
+            return null;
+        }
+        return "Bearer " + accessToken;
     }
 } 
