@@ -9,6 +9,7 @@ import com.example.femobile.*;
 import com.example.femobile.service.api.AlbumApi;
 import com.example.femobile.service.api.AuthApi;
 import com.example.femobile.service.api.SongApi;
+import com.example.femobile.service.api.ArtistAPI;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -82,6 +83,7 @@ public class RetrofitClient {
     public static AlbumApi getApialbum(Context context){
         return getClient(context).create(AlbumApi.class);
     }
-
-
+    public static ArtistAPI getArtistApi(Context context){
+        return getClient(context).create(ArtistAPI.class);
+    }
 }

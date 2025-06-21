@@ -20,9 +20,12 @@ import com.example.femobile.adapter.SongAdapter;
 import com.example.femobile.model.request.AlbumRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.model.response.AlbumResponse;
+import com.example.femobile.model.response.FollowArtistResponse;
 import com.example.femobile.model.response.SearchResponse;
 import com.example.femobile.network.RetrofitClient;
+import com.example.femobile.security.TokenManager;
 import com.example.femobile.service.api.AlbumApi;
+import com.example.femobile.service.api.ArtistAPI;
 import com.example.femobile.service.api.SongApi;
 
 import java.util.ArrayList;
@@ -38,7 +41,10 @@ public class ActivityArtist extends AppCompatActivity {
     private TextView tvArtistName;
     private RecyclerView rvAlbums;
     private ImageButton btnBack;
+    private ImageButton imageButton;
+    private TextView followButton;
     private AlbumAdapter albumAdapter;
+    private boolean isFollowing = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,6 +55,8 @@ public class ActivityArtist extends AppCompatActivity {
         tvArtistName = findViewById(R.id.tv_artist_name);
         rvAlbums = findViewById(R.id.rvAlbums2);
         btnBack = findViewById(R.id.btn_back2);
+        imageButton = findViewById(R.id.imageButton);
+        followButton = findViewById(R.id.followButton);
 
         albumAdapter = new AlbumAdapter();
         rvAlbums.setLayoutManager(new LinearLayoutManager(this));
@@ -67,9 +75,15 @@ public class ActivityArtist extends AppCompatActivity {
         }
 
         btnBack.setOnClickListener(v -> finish());
+        imageButton.setOnClickListener(v -> {
+            if (artistId != null && !artistId.isEmpty()) {
+                toggleFollowStatus(artistId);
+            }
+        });
 
         if (artistId != null && !artistId.isEmpty()) {
             fetchArtistAlbums(artistId);
+            checkIfFollowing(artistId);
         }
 
         albumAdapter.setOnItemClickListener(album -> {
@@ -78,6 +92,95 @@ public class ActivityArtist extends AppCompatActivity {
             albumIntent.putExtra("coverUrl", album.getCoverUrl());
             albumIntent.putExtra("albumTitle", album.getTitle());
             startActivity(albumIntent);
+        });
+    }
+
+    private void toggleFollowStatus(String artistId) {
+        if (isFollowing) {
+            unfollowArtist(artistId);
+        } else {
+            followArtist(artistId);
+        }
+    }
+
+    private void checkIfFollowing(String artistId) {
+        TokenManager tokenManager = new TokenManager(this);
+        String token = "Bearer " + tokenManager.getAccessToken();
+        ArtistAPI artistAPI = RetrofitClient.getArtistApi(this);
+
+        artistAPI.getFollowingArtists(token).enqueue(new Callback<List<FollowArtistResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<FollowArtistResponse>> call, @NonNull Response<List<FollowArtistResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (FollowArtistResponse followedArtist : response.body()) {
+                        if (followedArtist.getArtistId().equals(artistId)) {
+                            isFollowing = true;
+                            updateFollowButton(true);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<FollowArtistResponse>> call, @NonNull Throwable t) {
+                Log.e(TAG, "Failed to check follow status", t);
+            }
+        });
+    }
+
+    private void updateFollowButton(boolean isFollowing) {
+        if (isFollowing) {
+            followButton.setText("Following");
+            imageButton.setBackgroundResource(R.drawable.pill_green);
+        } else {
+            followButton.setText("Follow");
+            imageButton.setBackgroundResource(R.drawable.button_following_outline);
+        }
+    }
+
+    private void followArtist(String artistId) {
+        TokenManager tokenManager = new TokenManager(this);
+        String token = "Bearer " + tokenManager.getAccessToken();
+
+        ArtistAPI artistAPI = RetrofitClient.getArtistApi(this);
+        artistAPI.followArtist(token, artistId).enqueue(new Callback<FollowArtistResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<FollowArtistResponse> call, @NonNull Response<FollowArtistResponse> response) {
+                if (response.isSuccessful()) {
+                    isFollowing = true;
+                    updateFollowButton(true);
+                } else {
+                    Log.e(TAG, "Failed to follow artist. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<FollowArtistResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "API call to follow artist failed.", t);
+            }
+        });
+    }
+
+    private void unfollowArtist(String artistId) {
+        TokenManager tokenManager = new TokenManager(this);
+        String token = "Bearer " + tokenManager.getAccessToken();
+        ArtistAPI artistAPI = RetrofitClient.getArtistApi(this);
+        artistAPI.unfollowArtist(token, artistId).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    isFollowing = false;
+                    updateFollowButton(false);
+                } else {
+                    Log.e(TAG, "Failed to unfollow artist. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Log.e(TAG, "API call to unfollow artist failed.", t);
+            }
         });
     }
 

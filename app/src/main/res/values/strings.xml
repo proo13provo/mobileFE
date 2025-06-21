@@ -63,6 +63,8 @@
     <string name="recent">Đã nghe gần đây</string>
     <string name="yourplaylist">Danh sách phát của bạn</string>
     <string name="albumDisplay">Album</string>
+    <string name="follow">follow</string>
+    <string name="following">following</string>
 
 </resources>
 

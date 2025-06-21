@@ -148,6 +148,7 @@ public class TokenManager {
         return sharedPreferences.getLong(KEY_TOKEN_EXPIRATION, 0);
     }
 
+
     public interface OnTokenRefreshListener {
         void onTokenRefreshSuccess();
         void onTokenRefreshFailed(String error);
