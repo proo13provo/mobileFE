@@ -18,7 +18,6 @@ public interface AlbumApi {
     Call<Album> getAlbum(@Query("albumId") String albumId );
 
     @GET("user/album/getAlbumsByArtist")
-    Call<Album> getAlbumsByArtist(@Header("Authorization") String token,
-                                                @Query("artistId") String artistId);
+    Call<List<Album>> getAlbumsByArtist(@Query("artistId") String artistId);
 
 }

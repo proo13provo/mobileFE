@@ -2,6 +2,7 @@ package com.example.femobile.ui.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,10 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.femobile.R;
+import com.example.femobile.adapter.AlbumAdapter;
 import com.example.femobile.adapter.SongAdapter;
+import com.example.femobile.model.request.AlbumRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
+import com.example.femobile.model.response.AlbumResponse;
 import com.example.femobile.model.response.SearchResponse;
 import com.example.femobile.network.RetrofitClient;
+import com.example.femobile.service.api.AlbumApi;
 import com.example.femobile.service.api.SongApi;
 
 import java.util.ArrayList;
@@ -28,11 +33,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ActivityArtist extends AppCompatActivity {
+    private static final String TAG = "ActivityArtist";
     private ImageView headerBackground;
     private TextView tvArtistName;
-    private RecyclerView rvSongs;
+    private RecyclerView rvAlbums;
     private ImageButton btnBack;
-    private SongAdapter songAdapter;
+    private AlbumAdapter albumAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,12 +47,12 @@ public class ActivityArtist extends AppCompatActivity {
 
         headerBackground = findViewById(R.id.headerBackground);
         tvArtistName = findViewById(R.id.tv_artist_name);
-        rvSongs = findViewById(R.id.rvSongs);
+        rvAlbums = findViewById(R.id.rvAlbums2);
         btnBack = findViewById(R.id.btn_back2);
 
-        songAdapter = new SongAdapter();
-        rvSongs.setLayoutManager(new LinearLayoutManager(this));
-        rvSongs.setAdapter(songAdapter);
+        albumAdapter = new AlbumAdapter();
+        rvAlbums.setLayoutManager(new LinearLayoutManager(this));
+        rvAlbums.setAdapter(albumAdapter);
 
         Intent intent = getIntent();
         String artistId = intent.getStringExtra("artistId");
@@ -62,38 +68,44 @@ public class ActivityArtist extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        if (username != null && !username.isEmpty()) {
-            fetchArtistSongs(username);
+        if (artistId != null && !artistId.isEmpty()) {
+            fetchArtistAlbums(artistId);
         }
 
-        songAdapter.setOnItemClickListener(song -> {
-            Intent songDetailIntent = new Intent(this, SongDetailActivity.class);
-            songDetailIntent.putExtra("songId", song.getId());
-            startActivity(songDetailIntent);
+        albumAdapter.setOnItemClickListener(album -> {
+            Intent albumIntent = new Intent(this, ActivityAlbum.class);
+            albumIntent.putExtra("albumId", album.getId());
+            albumIntent.putExtra("coverUrl", album.getCoverUrl());
+            albumIntent.putExtra("albumTitle", album.getTitle());
+            startActivity(albumIntent);
         });
     }
 
-    private void fetchArtistSongs(String artistName) {
-        SongApi songApi = RetrofitClient.getApiService(this);
-        songApi.searchSongs(artistName).enqueue(new Callback<SearchResponse>() {
+    private void fetchArtistAlbums(String artistId) {
+        AlbumApi albumApi = RetrofitClient.getApialbum(this);
+        albumApi.getAlbumsByArtist(artistId).enqueue((new Callback<List<Album>>() {
             @Override
-            public void onResponse(@NonNull Call<SearchResponse> call, @NonNull Response<SearchResponse> response) {
+            public void onResponse(@NonNull Call<List<Album>> call, @NonNull Response<List<Album>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Song> songs = response.body().getData();
-                    if (songs != null && !songs.isEmpty()) {
-                        songAdapter.submitList(songs);
+                    android.util.Log.d(TAG, "onResponse: success, albums fetched");
+                    List<Album> albums = response.body();
+                    if (albums != null && !albums.isEmpty()) {
+                        albumAdapter.submitList(albums);
                     } else {
-                        songAdapter.submitList(new ArrayList<>());
+                        android.util.Log.d(TAG, "onResponse: albums list is empty or null");
+                        albumAdapter.submitList(new ArrayList<>());
                     }
                 } else {
-                    songAdapter.submitList(new ArrayList<>());
+                    android.util.Log.e(TAG, "onResponse: API call not successful. Code: " + response.code());
+                    albumAdapter.submitList(new ArrayList<>());
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<SearchResponse> call, @NonNull Throwable t) {
-                songAdapter.submitList(new ArrayList<>());
+            public void onFailure(@NonNull Call<List<Album>> call, @NonNull Throwable t) {
+                android.util.Log.e(TAG, "onFailure: API call failed", t);
+                albumAdapter.submitList(new ArrayList<>());
             }
-        });
+        }));
     }
 }
