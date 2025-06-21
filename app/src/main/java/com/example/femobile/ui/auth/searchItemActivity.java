@@ -81,10 +81,11 @@ public class searchItemActivity extends AppCompatActivity {
             startActivity(intent);
         });
         artistAdapter.setOnItemClickListener(artist -> {
-            Intent intent = new Intent(this, ActivityAlbum.class);
+            Intent intent = new Intent(this, ActivityArtist.class);
             intent.putExtra("artistId",artist.getId());
             intent.putExtra("UrlAvatar", artist.getUrlAvatar());
             intent.putExtra("username", artist.getUsername());
+            startActivity(intent);
         });
 
         cancelBtn.setOnClickListener(v -> {

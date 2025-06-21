@@ -51,6 +51,7 @@
             android:name=".ui.auth.SongDetailActivity"
             android:exported="false" />
         <activity android:name=".ui.auth.ActivityAlbum"/>
+        <activity android:name=".ui.auth.ActivityArtist"/>
 
 
         <!--suppress AndroidDomInspection -->
