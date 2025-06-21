@@ -1,6 +1,7 @@
 package com.example.femobile.model.response;
 
 import com.example.femobile.model.request.AlbumRequest.Album;
+import com.example.femobile.model.request.ArtistRequest.Artist;
 import com.google.gson.annotations.SerializedName; // Cần import này
 import com.example.femobile.model.request.SongRequest.Song;
 import java.util.List;
@@ -13,6 +14,9 @@ public class SearchResponse {
 
     @SerializedName("albums")
     private List<Album> albumList;
+
+    @SerializedName("artists")
+    private List<Artist> artistsList;
 
     // ... getters and setters giữ nguyên tên data
     public boolean isSuccess() {
@@ -41,5 +45,9 @@ public class SearchResponse {
 
     public List<Album> getAlbumsList() {
         return albumList;
+    }
+
+    public List<Artist> getArtistsList() {
+        return artistsList;
     }
 }
