@@ -1,5 +1,6 @@
 package com.example.femobile.ui.auth;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -129,13 +130,14 @@ public class ActivityArtist extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateFollowButton(boolean isFollowing) {
         if (isFollowing) {
-            followButton.setText("Following");
-            imageButton.setBackgroundResource(R.drawable.pill_green);
-        } else {
-            followButton.setText("Follow");
+            followButton.setText("following");
             imageButton.setBackgroundResource(R.drawable.button_following_outline);
+        } else {
+            followButton.setText("follow");
+            imageButton.setBackgroundResource(R.drawable.button_follow_outline);
         }
     }
 
@@ -179,7 +181,7 @@ public class ActivityArtist extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Log.e(TAG, "API call to unfollow artist failed.", t);
+
             }
         });
     }
@@ -190,23 +192,19 @@ public class ActivityArtist extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<List<Album>> call, @NonNull Response<List<Album>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    android.util.Log.d(TAG, "onResponse: success, albums fetched");
                     List<Album> albums = response.body();
                     if (albums != null && !albums.isEmpty()) {
                         albumAdapter.submitList(albums);
                     } else {
-                        android.util.Log.d(TAG, "onResponse: albums list is empty or null");
                         albumAdapter.submitList(new ArrayList<>());
                     }
                 } else {
-                    android.util.Log.e(TAG, "onResponse: API call not successful. Code: " + response.code());
                     albumAdapter.submitList(new ArrayList<>());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<Album>> call, @NonNull Throwable t) {
-                android.util.Log.e(TAG, "onFailure: API call failed", t);
                 albumAdapter.submitList(new ArrayList<>());
             }
         }));
