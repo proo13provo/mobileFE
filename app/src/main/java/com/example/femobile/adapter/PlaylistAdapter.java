@@ -17,7 +17,7 @@ import com.example.femobile.model.request.AlbumRequest.Album;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder> {
+public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder> {
     private List<Album> albums = new ArrayList<>();
     private OnItemClickListener listener;
 
@@ -31,15 +31,15 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
 
     @NonNull
     @Override
-    public AlbumViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_album, parent, false);
-        return new AlbumViewHolder(view);
+    public PlaylistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_playlist, parent, false);
+        return new PlaylistViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull AlbumViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PlaylistViewHolder holder, int position) {
         Album album = albums.get(position);
-        holder.tvTitle.setText(album.getTitle());
+        holder.tvPlaylistName.setText(album.getTitle());
 
         String imageUrl = album.getCoverUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
@@ -48,9 +48,9 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
                     .placeholder(R.drawable.ic_music_note)
                     .error(R.drawable.ic_music_note)
                     .centerCrop()
-                    .into(holder.ivAlbumImage);
+                    .into(holder.ivPlaylistCover);
         } else {
-            holder.ivAlbumImage.setImageResource(R.drawable.ic_music_note);
+            holder.ivPlaylistCover.setImageResource(R.drawable.ic_music_note);
         }
 
         holder.itemView.setOnClickListener(v -> {
@@ -71,14 +71,14 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
         notifyDataSetChanged();
     }
 
-    static class AlbumViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle;
-        ImageView ivAlbumImage;
+    static class PlaylistViewHolder extends RecyclerView.ViewHolder {
+        TextView tvPlaylistName;
+        ImageView ivPlaylistCover;
 
-        public AlbumViewHolder(@NonNull View itemView) {
+        public PlaylistViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvAlbumTitle);
-            ivAlbumImage = itemView.findViewById(R.id.ivAlbumImage);
+            tvPlaylistName = itemView.findViewById(R.id.tvPlaylistName);
+            ivPlaylistCover = itemView.findViewById(R.id.ivPlaylistCover);
         }
     }
-}
+} 

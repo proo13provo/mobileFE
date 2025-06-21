@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.femobile.model.request.AlbumRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
+import com.example.femobile.model.response.AlbumResponse;
 import com.example.femobile.model.response.ListeningHistoryResponse;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.security.TokenManager;
@@ -27,10 +28,10 @@ import retrofit2.Response;
 public class HomeViewModel extends AndroidViewModel {
     private static final String TAG = "HomeViewModel";
     private final MutableLiveData<List<Song>> recentSongs = new MutableLiveData<>();
+    private final MutableLiveData<List<Album>> albums = new MutableLiveData<>();
     private final TokenManager tokenManager;
     private final SongApi songApi;
     private final AlbumApi albumApi;
-
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -41,6 +42,10 @@ public class HomeViewModel extends AndroidViewModel {
 
     public LiveData<List<Song>> getRecentSongs() {
         return recentSongs;
+    }
+
+    public LiveData<List<Album>> getAlbums() {
+        return albums;
     }
 
     public void loadRecentListeningHistory() {
@@ -66,7 +71,7 @@ public class HomeViewModel extends AndroidViewModel {
                         Log.d(TAG, "No history items found");
                         recentSongs.postValue(new ArrayList<>());
                     }
-                } else {
+                } else if (response.code() == 401) {
                     Log.d(TAG, "Token expired, attempting to refresh");
                     tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
                         @Override
@@ -79,6 +84,8 @@ public class HomeViewModel extends AndroidViewModel {
                             Log.e(TAG, "Token refresh failed: " + error);
                         }
                     });
+                } else {
+                    Log.e(TAG, "Error response: " + response.code() + " " + response.message());
                 }
             }
 
@@ -88,22 +95,49 @@ public class HomeViewModel extends AndroidViewModel {
             }
         });
     }
-    public void loadAlbum(){
+
+    public void loadAlbum() {
         String token = getValidBearerTokenOrNull();
         if (token == null) {
             return;
         }
-        albumApi.getAlbums(token).enqueue(new Callback<List<Album>>() {
+
+        albumApi.getAllAlbums(token).enqueue(new Callback<AlbumResponse>() {
             @Override
-            public void onResponse(@NonNull Call<List<Album>> call, @NonNull Response<List<Album>> response) {
-                if(response.isSuccessful()&& response.body() != null ){
-                    
+            public void onResponse(@NonNull Call<AlbumResponse> call, @NonNull Response<AlbumResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    AlbumResponse albumResponse = response.body();
+                    List<Album> albumList = albumResponse.getContent();
+
+                    if (albumList != null && !albumList.isEmpty()) {
+                        Log.d(TAG, "Received " + albumList.size() + " albums");
+                        albums.postValue(albumList);
+                    } else {
+                        Log.d(TAG, "No albums found in response");
+                        albums.postValue(new ArrayList<>());
+                    }
+
+                } else if (response.code() == 401) {
+                    Log.d(TAG, "Token expired, attempting to refresh");
+                    tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
+                        @Override
+                        public void onTokenRefreshSuccess() {
+                            loadAlbum();
+                        }
+
+                        @Override
+                        public void onTokenRefreshFailed(String error) {
+                            Log.e(TAG, "Token refresh failed: " + error);
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "Error response: " + response.code() + " " + response.message());
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<Album>> call, Throwable t) {
-
+            public void onFailure(@NonNull Call<AlbumResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Error loading albums", t);
             }
         });
     }

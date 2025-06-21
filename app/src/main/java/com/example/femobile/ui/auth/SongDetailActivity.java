@@ -131,8 +131,8 @@ public class SongDetailActivity extends AppCompatActivity {
         intent.putExtra("currentSong", currentSong);
         intent.putExtra("isPlaying", musicService != null && musicService.isPlaying());
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
         overridePendingTransition(R.anim.stay, R.anim.slide_out_down);
+        startActivity(intent);
         finish();
     }
 

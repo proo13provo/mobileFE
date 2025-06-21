@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.femobile.R;
-import com.example.femobile.adapter.AlbumAdapter;
+import com.example.femobile.adapter.PlaylistAdapter;
 import com.example.femobile.adapter.SongAdapter;
 import com.example.femobile.model.request.AlbumRequest.Album;
 import com.example.femobile.model.request.SongRequest.Song;
@@ -42,7 +42,7 @@ public class HomeFragment extends Fragment {
     private MusicService musicService;
     private boolean bound = false;
     private HomeViewModel homeViewModel;
-    AlbumAdapter albumAdapter;
+    PlaylistAdapter playlistAdapter;
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -73,6 +73,8 @@ public class HomeFragment extends Fragment {
         super.onResume();
         // Load recent listening history
         homeViewModel.loadRecentListeningHistory();
+        // Load albums
+        homeViewModel.loadAlbum();
     }
 
     @Override
@@ -95,11 +97,12 @@ public class HomeFragment extends Fragment {
         rvSongs.setLayoutManager(new LinearLayoutManager(getContext()));
 
         rvAlbums = view.findViewById(R.id.rvAlbums1);
-        rvAlbums.setLayoutManager(new GridLayoutManager(getContext(),6, RecyclerView.HORIZONTAL, false));
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2); // 2 là số cột
+        rvAlbums.setLayoutManager(layoutManager);
 
-        albumAdapter = new AlbumAdapter();
-        rvAlbums.setAdapter(albumAdapter);
-        albumAdapter.setOnItemClickListener(album -> {
+        playlistAdapter = new PlaylistAdapter();
+        rvAlbums.setAdapter(playlistAdapter);
+        playlistAdapter.setOnItemClickListener(album -> {
             Intent intent = new Intent(getActivity(), ActivityAlbum.class);
             intent.putExtra("albumId", album.getId());
             intent.putExtra("coverUrl", album.getCoverUrl());
@@ -132,6 +135,7 @@ public class HomeFragment extends Fragment {
 
         // Observe recent songs LiveData
         homeViewModel.getRecentSongs().observe(getViewLifecycleOwner(), songs -> {
+            Log.d("HomeFragment", "Recent songs: " + (songs != null ? songs.size() : "null"));
             if (songs != null && !songs.isEmpty()) {
                 TextView recentTextView = view.findViewById(R.id.recent);
                 recentTextView.setVisibility(View.VISIBLE);
@@ -140,6 +144,16 @@ public class HomeFragment extends Fragment {
                 TextView recentTextView = view.findViewById(R.id.recent);
                 recentTextView.setVisibility(View.GONE);
                 songAdapter.submitList(new ArrayList<>());
+            }
+        });
+
+        // Observe albums LiveData
+        homeViewModel.getAlbums().observe(getViewLifecycleOwner(), albumList -> {
+            Log.d("HomeFragment", "Albums: " + (albumList != null ? albumList.size() : "null"));
+            if (albumList != null && !albumList.isEmpty()) {
+                playlistAdapter.submitList(albumList);
+            } else {
+                playlistAdapter.submitList(new ArrayList<>());
             }
         });
         
