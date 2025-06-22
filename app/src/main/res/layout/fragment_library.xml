@@ -1,7 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_dark">
+    android:orientation="vertical"
+    android:background="#121212">
 
-</RelativeLayout>
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="32dp"
+        android:paddingBottom="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_avatar_placeholder"
+            android:backgroundTint="#F06292"
+            android:scaleType="centerCrop"
+            android:background="@drawable/avatar_circle_bg" />
+
+        <TextView
+            android:id="@+id/tvYourLibrary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Library"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginStart="12dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/btnSearch"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_search"
+            android:tint="#FFFFFF"
+            android:layout_marginEnd="16dp" />
+
+        <ImageView
+            android:id="@+id/btnAdd"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_add"
+            android:tint="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Tabs -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/btnPlaylists"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Playlists"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#232323"
+            android:background="@drawable/tab_button_bg"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnAlbums"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Albums"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#232323"
+            android:background="@drawable/tab_button_bg"
+            android:textStyle="bold"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnArtists"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="Artists"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#232323"
+            android:background="@drawable/tab_button_bg"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Recents label -->
+    <TextView
+        android:id="@+id/tvRecents"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recents"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <!-- RecyclerView for playlists/albums/artists -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvLibrary"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never" />
+
+    <!-- Bottom Navigation (nếu dùng chung layout thì có thể bỏ phần này) -->
+    <!--
+    <include layout="@layout/bottom_navigation" />
+    -->
+
+</LinearLayout>

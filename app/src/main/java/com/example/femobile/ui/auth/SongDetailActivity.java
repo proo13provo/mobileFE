@@ -121,6 +121,10 @@ public class SongDetailActivity extends AppCompatActivity {
                 playPreviousSong();
             }
         });
+        binding.menuButton.setOnClickListener(v -> {
+            com.example.femobile.ui.dialog.AddToPlaylistDialogFragment.newInstance()
+                .show(getSupportFragmentManager(), "add_to_playlist");
+        });
     }
 
     private void handleBackButtonClick() {
