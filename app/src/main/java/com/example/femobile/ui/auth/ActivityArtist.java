@@ -1,6 +1,7 @@
 package com.example.femobile.ui.auth;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -152,6 +153,7 @@ public class ActivityArtist extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     isFollowing = true;
                     updateFollowButton(true);
+                    setResult(Activity.RESULT_OK);
                 } else {
                     Log.e(TAG, "Failed to follow artist. Code: " + response.code());
                 }
@@ -174,6 +176,7 @@ public class ActivityArtist extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     isFollowing = false;
                     updateFollowButton(false);
+                    setResult(Activity.RESULT_OK);
                 } else {
                     Log.e(TAG, "Failed to unfollow artist. Code: " + response.code());
                 }

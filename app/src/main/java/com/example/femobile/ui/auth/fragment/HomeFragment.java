@@ -1,6 +1,5 @@
 package com.example.femobile.ui.auth.fragment;
 
-import static com.example.femobile.R.*;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -25,10 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.femobile.R;
-import com.example.femobile.adapter.PlaylistAdapter;
+import com.example.femobile.adapter.AlbumAdapter2;
 import com.example.femobile.adapter.SongAdapter;
-import com.example.femobile.model.request.AlbumRequest.Album;
-import com.example.femobile.model.request.SongRequest.Song;
 import com.example.femobile.service.MusicService;
 import com.example.femobile.ui.auth.ActivityAlbum;
 import com.example.femobile.ui.auth.SongDetailActivity;
@@ -42,7 +39,7 @@ public class HomeFragment extends Fragment {
     private MusicService musicService;
     private boolean bound = false;
     private HomeViewModel homeViewModel;
-    PlaylistAdapter playlistAdapter;
+    AlbumAdapter2 playlistAdapter;
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -100,7 +97,7 @@ public class HomeFragment extends Fragment {
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 2); // 2 là số cột
         rvAlbums.setLayoutManager(layoutManager);
 
-        playlistAdapter = new PlaylistAdapter();
+        playlistAdapter = new AlbumAdapter2();
         rvAlbums.setAdapter(playlistAdapter);
         playlistAdapter.setOnItemClickListener(album -> {
             Intent intent = new Intent(getActivity(), ActivityAlbum.class);
