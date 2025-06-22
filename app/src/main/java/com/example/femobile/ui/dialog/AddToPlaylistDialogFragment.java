@@ -19,26 +19,17 @@ import com.example.femobile.model.LibraryItem;
 import com.example.femobile.ui.auth.viewmodel.LibraryViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AddToPlaylistDialogFragment extends BottomSheetDialogFragment {
     private AddPlaylistAdapter adapter;
-    private List<LibraryItem> playlistList = new ArrayList<>();
     private OnAddToPlaylistDoneListener doneListener;
     private LibraryViewModel libraryViewModel;
 
     public interface OnAddToPlaylistDoneListener {
-        void onAddToPlaylistDone(List<LibraryItem> selectedItems);
+        void onAddToPlaylistDone(java.util.List<LibraryItem> selectedItems);
     }
 
     public static AddToPlaylistDialogFragment newInstance() {
         return new AddToPlaylistDialogFragment();
-    }
-
-    public void setPlaylistList(List<LibraryItem> playlists) {
-        this.playlistList = playlists;
-        if (adapter != null) adapter.submitList(playlists);
     }
 
     public void setOnAddToPlaylistDoneListener(OnAddToPlaylistDoneListener listener) {
@@ -59,9 +50,11 @@ public class AddToPlaylistDialogFragment extends BottomSheetDialogFragment {
         adapter = new AddPlaylistAdapter();
         rvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPlaylists.setAdapter(adapter);
-        adapter.submitList(playlistList);
 
         libraryViewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
+        libraryViewModel.getPlaylists().observe(getViewLifecycleOwner(), playlists -> {
+            adapter.submitList(new java.util.ArrayList<>(playlists));
+        });
 
         btnCancel.setOnClickListener(v -> dismiss());
         btnClearAll.setOnClickListener(v -> adapter.clearSelection());
@@ -91,8 +84,6 @@ public class AddToPlaylistDialogFragment extends BottomSheetDialogFragment {
                         "0 songs"
                     );
                     libraryViewModel.addPlaylist(newPlaylist);
-                    playlistList.add(0, newPlaylist);
-                    adapter.submitList(new ArrayList<>(playlistList));
                 }
             });
             builder.setNegativeButton("Cancel", (dialog1, which) -> dialog1.cancel());
