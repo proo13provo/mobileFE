@@ -2,6 +2,7 @@ package com.example.femobile.security;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.health.connect.changelog.ChangeLogTokenResponse;
 import android.util.Log;
 
 import com.example.femobile.model.request.AuthRequest.RefreshTokenRequest;
@@ -30,6 +31,7 @@ public class TokenManager {
         this.sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         this.authService = RetrofitClient.getAuthService(context);
     }
+
 
     public boolean hasValidTokens() {
         String accessToken = getAccessToken();

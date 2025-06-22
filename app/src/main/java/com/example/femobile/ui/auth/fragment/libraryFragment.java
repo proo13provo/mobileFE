@@ -12,20 +12,20 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.femobile.R;
 import com.example.femobile.adapter.ArtistAdapter;
-import com.example.femobile.adapter.LibraryItemAdapter;
+import com.example.femobile.adapter.PlaylistAdapter;
 import com.example.femobile.model.request.ArtistRequest.Artist;
 import com.example.femobile.model.response.FollowArtistResponse;
+import com.example.femobile.model.response.PlayListResponse;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.security.TokenManager;
 import com.example.femobile.service.api.ArtistAPI;
+import com.example.femobile.service.api.PlayListApi;
 import com.example.femobile.ui.auth.ActivityArtist;
-import com.example.femobile.ui.auth.viewmodel.LibraryViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,17 +35,21 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class libraryFragment extends Fragment {
-    private LibraryItemAdapter adapter;
-    private LibraryViewModel libraryViewModel;
     RecyclerView rvArtist;
     private ArtistAdapter artistAdapter;
-    ImageView ivClear;
-
+    RecyclerView rvPlaylists;
+    private PlaylistAdapter playlistAdapter;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library, container, false);
+        // Playlist
+        rvPlaylists = view.findViewById(R.id.rvAlbums); // Dùng lại rvAlbums cho playlist
+        playlistAdapter = new PlaylistAdapter();
+        rvPlaylists.setAdapter(playlistAdapter);
+        rvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Artists
         rvArtist = view.findViewById(R.id.rvArtist);
         artistAdapter = new ArtistAdapter();
         rvArtist.setAdapter(artistAdapter);
@@ -58,6 +62,7 @@ public class libraryFragment extends Fragment {
             startActivity(intent);
         });
         fetchFollowingArtists();
+        fetchUserPlaylists();
         return view;
     }
 
@@ -65,6 +70,7 @@ public class libraryFragment extends Fragment {
     public void onResume() {
         super.onResume();
         fetchFollowingArtists();
+        fetchUserPlaylists();
     }
 
     private void fetchFollowingArtists() {
@@ -101,6 +107,35 @@ public class libraryFragment extends Fragment {
             public void onFailure(@NonNull Call<List<FollowArtistResponse>> call, @NonNull Throwable t) {
                 artistAdapter.submitList(new ArrayList<>());
                 Toast.makeText(getContext(), "Lỗi kết nối khi lấy nghệ sĩ!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchUserPlaylists() {
+        TokenManager tokenManager = new TokenManager(requireContext());
+        String token = tokenManager.getValidAccessToken();
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(getContext(), "Bạn chưa đăng nhập hoặc token hết hạn!", Toast.LENGTH_SHORT).show();
+            playlistAdapter.setPlaylists(new ArrayList<>());
+            return;
+        }
+        token = "Bearer " + token;
+        PlayListApi playListApi = RetrofitClient.getplayListApi(requireContext());
+        playListApi.getPlayLists(token).enqueue(new Callback<List<PlayListResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<PlayListResponse>> call, @NonNull Response<List<PlayListResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    playlistAdapter.setPlaylists(response.body());
+                } else {
+                    playlistAdapter.setPlaylists(new ArrayList<>());
+                    Toast.makeText(getContext(), "Không thể lấy danh sách playlist!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<PlayListResponse>> call, @NonNull Throwable t) {
+                playlistAdapter.setPlaylists(new ArrayList<>());
+                Toast.makeText(getContext(), "Lỗi kết nối khi lấy playlist!", Toast.LENGTH_SHORT).show();
             }
         });
     }

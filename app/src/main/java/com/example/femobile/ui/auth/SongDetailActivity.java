@@ -39,6 +39,7 @@ import com.example.femobile.model.request.SongRequest.SongIdsRequest;
 import com.example.femobile.network.RetrofitClient;
 import com.example.femobile.service.MusicService;
 import com.example.femobile.service.api.SongApi;
+import com.example.femobile.ui.dialog.AddToPlaylistDialogFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,9 +122,9 @@ public class SongDetailActivity extends AppCompatActivity {
                 playPreviousSong();
             }
         });
-        binding.menuButton.setOnClickListener(v -> {
-            com.example.femobile.ui.dialog.AddToPlaylistDialogFragment.newInstance()
-                .show(getSupportFragmentManager(), "add_to_playlist");
+        binding.addButton.setOnClickListener(v -> {
+            AddToPlaylistDialogFragment dialog = AddToPlaylistDialogFragment.newInstance(currentSong.getId());
+            dialog.show(getSupportFragmentManager(), "AddToPlaylistDialog");
         });
     }
 

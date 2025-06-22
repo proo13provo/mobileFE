@@ -11,6 +11,10 @@ public class PlayListRequest {
         this.imageUrl = imageUrl;
     }
 
+    public PlayListRequest() {
+
+    }
+
     public String getName() {
         return name;
     }

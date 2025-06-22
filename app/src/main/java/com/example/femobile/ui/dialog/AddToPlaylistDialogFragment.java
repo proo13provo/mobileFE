@@ -1,95 +1,184 @@
 package com.example.femobile.ui.dialog;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.femobile.R;
-import com.example.femobile.adapter.AddPlaylistAdapter;
-import com.example.femobile.model.LibraryItem;
-import com.example.femobile.ui.auth.viewmodel.LibraryViewModel;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.example.femobile.adapter.PlaylistAdapter;
+import com.example.femobile.databinding.DialogAddToPlaylistBinding;
+import com.example.femobile.model.response.PlayListResponse;
+import com.example.femobile.network.RetrofitClient;
+import com.example.femobile.service.api.PlayListApi;
+import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import android.widget.EditText;
+import com.example.femobile.model.request.PlayListRequest.PlayListRequest;
+import com.example.femobile.security.TokenManager;
+import com.example.femobile.model.request.PlayListRequest.PlaylistItemRequest;
 
-public class AddToPlaylistDialogFragment extends BottomSheetDialogFragment {
-    private AddPlaylistAdapter adapter;
-    private OnAddToPlaylistDoneListener doneListener;
-    private LibraryViewModel libraryViewModel;
+public class AddToPlaylistDialogFragment extends DialogFragment {
+    private DialogAddToPlaylistBinding binding;
+    private String songId;
+    private PlaylistAdapter adapter;
+    private Long selectedPlaylistId = null;
+    private Long lastCreatedPlaylistId = null;
 
-    public interface OnAddToPlaylistDoneListener {
-        void onAddToPlaylistDone(java.util.List<LibraryItem> selectedItems);
+    public static AddToPlaylistDialogFragment newInstance(String songId) {
+        AddToPlaylistDialogFragment fragment = new AddToPlaylistDialogFragment();
+        Bundle args = new Bundle();
+        args.putString("songId", songId);
+        fragment.setArguments(args);
+        return fragment;
     }
 
-    public static AddToPlaylistDialogFragment newInstance() {
-        return new AddToPlaylistDialogFragment();
-    }
-
-    public void setOnAddToPlaylistDoneListener(OnAddToPlaylistDoneListener listener) {
-        this.doneListener = listener;
-    }
-
-    @Nullable
+    @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_add_to_playlist, container, false);
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        binding = DialogAddToPlaylistBinding.inflate(LayoutInflater.from(getContext()));
+        songId = getArguments().getString("songId");
 
-        TextView btnCancel = view.findViewById(R.id.btnCancel);
-        Button btnNewPlaylist = view.findViewById(R.id.btnNewPlaylist);
-        TextView btnClearAll = view.findViewById(R.id.btnClearAll);
-        Button btnDone = view.findViewById(R.id.btnDone);
-        RecyclerView rvPlaylists = view.findViewById(R.id.rvPlaylists);
+        // Setup RecyclerView
+        adapter = new PlaylistAdapter();
+        binding.rvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.rvPlaylists.setAdapter(adapter);
 
-        adapter = new AddPlaylistAdapter();
-        rvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
-        rvPlaylists.setAdapter(adapter);
+        // Load playlists
+        loadPlaylists();
 
-        libraryViewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
-        libraryViewModel.getPlaylists().observe(getViewLifecycleOwner(), playlists -> {
-            adapter.submitList(new java.util.ArrayList<>(playlists));
+        // Tạo playlist mới
+        binding.btnNewPlaylist.setOnClickListener(v -> showCreatePlaylistDialog());
+//
+//         Chọn playlist
+        adapter.setOnItemClickListener(playlist -> {
+            selectedPlaylistId = playlist.getId();
+            adapter.setSelectedPlaylistId(selectedPlaylistId);
         });
 
-        btnCancel.setOnClickListener(v -> dismiss());
-        btnClearAll.setOnClickListener(v -> adapter.clearSelection());
-        btnDone.setOnClickListener(v -> {
-            if (doneListener != null) {
-                doneListener.onAddToPlaylistDone(adapter.getSelectedItems());
+        // Done
+        binding.btnDone.setOnClickListener(v -> {
+            if (selectedPlaylistId != null) {
+                addSongToPlaylist(selectedPlaylistId, songId);
+            } else {
+                Toast.makeText(getContext(), "Chọn playlist!", Toast.LENGTH_SHORT).show();
             }
-            for (LibraryItem item : adapter.getSelectedItems()) {
-                libraryViewModel.addPlaylist(item);
-            }
-            dismiss();
         });
-        btnNewPlaylist.setOnClickListener(v -> {
-            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
-            builder.setTitle("New Playlist");
 
-            final android.widget.EditText input = new android.widget.EditText(requireContext());
-            input.setHint("Playlist name");
-            builder.setView(input);
+        // Cancel
+        binding.btnCancel.setOnClickListener(v -> dismiss());
 
-            builder.setPositiveButton("Create", (dialog1, which) -> {
+        return new AlertDialog.Builder(requireContext())
+                .setView(binding.getRoot())
+                .create();
+    }
+
+    private void loadPlaylists() {
+        PlayListApi api = RetrofitClient.getplayListApi(getContext());
+        TokenManager tokenManager = new TokenManager(requireContext());
+        String token = tokenManager.getValidAccessToken();
+        api.getPlayLists(token).enqueue(new Callback<List<PlayListResponse>>() {
+            @Override
+            public void onResponse(Call<List<PlayListResponse>> call, Response<List<PlayListResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    adapter.setPlaylists(response.body());
+                    // Nếu vừa tạo playlist, tự động chọn nó
+                    if (lastCreatedPlaylistId != null) {
+                        adapter.setSelectedPlaylistId(lastCreatedPlaylistId);
+                        lastCreatedPlaylistId = null;
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<List<PlayListResponse>> call, Throwable t) {}
+        });
+    }
+
+    private void showCreatePlaylistDialog() {
+        Context context = getContext();
+        if (context == null) return;
+
+        final EditText input = new EditText(context);
+        input.setHint("Nhập tên playlist");
+
+        new AlertDialog.Builder(context)
+            .setTitle("Tạo playlist mới")
+            .setView(input)
+            .setPositiveButton("Done", (dialog, which) -> {
                 String playlistName = input.getText().toString().trim();
                 if (!playlistName.isEmpty()) {
-                    LibraryItem newPlaylist = new LibraryItem(
-                        R.drawable.ic_music_note,
-                        playlistName,
-                        "0 songs"
-                    );
-                    libraryViewModel.addPlaylist(newPlaylist);
+                    createNewPlaylist(playlistName);
+                } else {
+                    Toast.makeText(context, "Tên playlist không được để trống", Toast.LENGTH_SHORT).show();
                 }
-            });
-            builder.setNegativeButton("Cancel", (dialog1, which) -> dialog1.cancel());
-
-            builder.show();
-        });
-        return view;
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
     }
-} 
+
+    private void createNewPlaylist(String name) {
+        PlayListApi api = RetrofitClient.getplayListApi(getContext());
+        TokenManager tokenManager = new TokenManager(requireContext());
+        String token = tokenManager.getValidAccessToken();
+        PlayListRequest request = new PlayListRequest();
+        request.setName(name);
+
+        api.addPlayList(token, request).enqueue(new Callback<PlayListResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PlayListResponse> call, @NonNull Response<PlayListResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(getContext(), "Tạo playlist thành công!", Toast.LENGTH_SHORT).show();
+                    lastCreatedPlaylistId = response.body().getId(); // Lưu lại id playlist vừa tạo
+                    loadPlaylists(); // Load lại danh sách
+                } else {
+                    Toast.makeText(getContext(), "Tạo playlist thất bại!", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<PlayListResponse> call, @NonNull Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void addSongToPlaylist(Long playlistId, String songId) {
+        PlayListApi api = RetrofitClient.getplayListApi(getContext());
+        TokenManager tokenManager = new TokenManager(requireContext());
+        String token = tokenManager.getValidAccessToken();
+        PlaylistItemRequest request = new PlaylistItemRequest(playlistId, songId);
+
+        api.addSongToPlaylist(token, request).enqueue(new Callback<PlaylistItemRequest>() {
+            @Override
+            public void onResponse(@NonNull Call<PlaylistItemRequest> call, @NonNull Response<PlaylistItemRequest> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Đã thêm vào playlist!", Toast.LENGTH_SHORT).show();
+                    dismiss();
+                } else {
+                    String errorMsg = "Thêm vào playlist thất bại!";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorMsg += " " + response.errorBody().string();
+                            Log.e("AddToPlaylistDialogFragment", errorMsg);
+                        } catch (Exception e) {
+                            errorMsg += " (Không đọc được lỗi chi tiết)";
+                        }
+                    }
+                    Toast.makeText(getContext(), errorMsg, Toast.LENGTH_LONG).show();
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<PlaylistItemRequest> call, @NonNull Throwable t) {
+                Toast.makeText(getContext(), "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+}
