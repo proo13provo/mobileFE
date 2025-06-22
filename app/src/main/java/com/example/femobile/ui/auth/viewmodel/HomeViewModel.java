@@ -33,6 +33,10 @@ public class HomeViewModel extends AndroidViewModel {
     private final SongApi songApi;
     private final AlbumApi albumApi;
 
+    private interface TokenCallback {
+        void execute(String token);
+    }
+
     public HomeViewModel(@NonNull Application application) {
         super(application);
         tokenManager = new TokenManager(application);
@@ -48,97 +52,116 @@ public class HomeViewModel extends AndroidViewModel {
         return albums;
     }
 
-    public void loadRecentListeningHistory() {
+    private void executeWithToken(TokenCallback callback) {
         String token = getValidBearerTokenOrNull();
-        if (token == null) {
-            return;
-        }
-        
-        songApi.listeningHistory(token).enqueue(new Callback<ListeningHistoryResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<ListeningHistoryResponse> call, @NonNull Response<ListeningHistoryResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<ListeningHistoryResponse.ListeningHistoryItem> historyItems = response.body().getListeningHistoryItemResponse();
-                    Log.d(TAG, "Received " + (historyItems != null ? historyItems.size() : 0) + " history items");
-                    
-                    if (historyItems != null && !historyItems.isEmpty()) {
-                        List<Song> songs = historyItems.stream()
-                            .map(ListeningHistoryResponse.ListeningHistoryItem::getSongResponse)
-                            .limit(3)
-                            .collect(Collectors.toList());
-                        recentSongs.postValue(songs);
+        if (token != null) {
+            callback.execute(token);
+        } else {
+            Log.d(TAG, "No valid token, attempting to refresh.");
+            tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
+                @Override
+                public void onTokenRefreshSuccess() {
+                    String newToken = getValidBearerTokenOrNull();
+                    if (newToken != null) {
+                        callback.execute(newToken);
                     } else {
-                        Log.d(TAG, "No history items found");
-                        recentSongs.postValue(new ArrayList<>());
+                        Log.e(TAG, "Failed to get a valid token after refresh.");
                     }
-                } else if (response.code() == 401) {
-                    Log.d(TAG, "Token expired, attempting to refresh");
-                    tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
-                        @Override
-                        public void onTokenRefreshSuccess() {
-                            loadRecentListeningHistory();
-                        }
-
-                        @Override
-                        public void onTokenRefreshFailed(String error) {
-                            Log.e(TAG, "Token refresh failed: " + error);
-                        }
-                    });
-                } else {
-                    Log.e(TAG, "Error response: " + response.code() + " " + response.message());
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<ListeningHistoryResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "Error loading listening history", t);
-            }
+                @Override
+                public void onTokenRefreshFailed(String error) {
+                    Log.e(TAG, "Token refresh failed: " + error);
+                }
+            });
+        }
+    }
+
+    public void loadRecentListeningHistory() {
+        executeWithToken(token -> {
+            songApi.listeningHistory(token).enqueue(new Callback<ListeningHistoryResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<ListeningHistoryResponse> call, @NonNull Response<ListeningHistoryResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<ListeningHistoryResponse.ListeningHistoryItem> historyItems = response.body().getListeningHistoryItemResponse();
+                        Log.d(TAG, "Received " + (historyItems != null ? historyItems.size() : 0) + " history items");
+
+                        if (historyItems != null && !historyItems.isEmpty()) {
+                            List<Song> songs = historyItems.stream()
+                                    .map(ListeningHistoryResponse.ListeningHistoryItem::getSongResponse)
+                                    .limit(3)
+                                    .collect(Collectors.toList());
+                            recentSongs.postValue(songs);
+                        } else {
+                            Log.d(TAG, "No history items found");
+                            recentSongs.postValue(new ArrayList<>());
+                        }
+                    } else if (response.code() == 401) {
+                        Log.d(TAG, "Token expired, attempting to refresh");
+                        tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
+                            @Override
+                            public void onTokenRefreshSuccess() {
+                                loadRecentListeningHistory();
+                            }
+
+                            @Override
+                            public void onTokenRefreshFailed(String error) {
+                                Log.e(TAG, "Token refresh failed: " + error);
+                            }
+                        });
+                    } else {
+                        Log.e(TAG, "Error response: " + response.code() + " " + response.message());
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<ListeningHistoryResponse> call, @NonNull Throwable t) {
+                    Log.e(TAG, "Error loading listening history", t);
+                }
+            });
         });
     }
 
     public void loadAlbum() {
-        String token = getValidBearerTokenOrNull();
-        if (token == null) {
-            return;
-        }
+        executeWithToken(token -> {
+            albumApi.getAllAlbums(token).enqueue(new Callback<AlbumResponse>() {
+                @Override
+                public void onResponse(@NonNull Call<AlbumResponse> call, @NonNull Response<AlbumResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        AlbumResponse albumResponse = response.body();
+                        List<Album> albumList = albumResponse.getContent();
 
-        albumApi.getAllAlbums(token).enqueue(new Callback<AlbumResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<AlbumResponse> call, @NonNull Response<AlbumResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    AlbumResponse albumResponse = response.body();
-                    List<Album> albumList = albumResponse.getContent();
+                        if (albumList != null && !albumList.isEmpty()) {
+                            Log.d(TAG, "Received " + albumList.size() + " albums");
+                            albums.postValue(albumList);
+                        } else {
+                            Log.d(TAG, "No albums found in response");
+                            albums.postValue(new ArrayList<>());
+                        }
 
-                    if (albumList != null && !albumList.isEmpty()) {
-                        Log.d(TAG, "Received " + albumList.size() + " albums");
-                        albums.postValue(albumList);
+                    } else if (response.code() == 401) {
+                        Log.d(TAG, "Token expired, attempting to refresh");
+                        tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
+                            @Override
+                            public void onTokenRefreshSuccess() {
+                                loadAlbum();
+                            }
+
+                            @Override
+                            public void onTokenRefreshFailed(String error) {
+                                Log.e(TAG, "Token refresh failed: " + error);
+                            }
+                        });
                     } else {
-                        Log.d(TAG, "No albums found in response");
-                        albums.postValue(new ArrayList<>());
+                        Log.e(TAG, "Error response: " + response.code() + " " + response.message());
                     }
-
-                } else if (response.code() == 401) {
-                    Log.d(TAG, "Token expired, attempting to refresh");
-                    tokenManager.refreshToken(new TokenManager.OnTokenRefreshListener() {
-                        @Override
-                        public void onTokenRefreshSuccess() {
-                            loadAlbum();
-                        }
-
-                        @Override
-                        public void onTokenRefreshFailed(String error) {
-                            Log.e(TAG, "Token refresh failed: " + error);
-                        }
-                    });
-                } else {
-                    Log.e(TAG, "Error response: " + response.code() + " " + response.message());
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<AlbumResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "Error loading albums", t);
-            }
+                @Override
+                public void onFailure(@NonNull Call<AlbumResponse> call, @NonNull Throwable t) {
+                    Log.e(TAG, "Error loading albums", t);
+                }
+            });
         });
     }
     
