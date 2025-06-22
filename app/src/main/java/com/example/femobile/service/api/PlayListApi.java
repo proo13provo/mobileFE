@@ -14,7 +14,7 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 
-public interface playListApi {
+public interface PlayListApi {
     // lấy tất cả các playList của người dùng
     @GET("user/playlist/getPlayLists")
     Call<List<PlayListResponse>> getPlayLists(@Header("Authorization") String token);

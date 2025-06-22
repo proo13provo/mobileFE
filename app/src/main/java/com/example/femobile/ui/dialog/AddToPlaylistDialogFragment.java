@@ -90,7 +90,6 @@ public class AddToPlaylistDialogFragment extends BottomSheetDialogFragment {
 
             builder.show();
         });
-
         return view;
     }
 } 

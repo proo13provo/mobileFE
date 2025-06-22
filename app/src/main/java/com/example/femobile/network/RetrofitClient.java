@@ -8,6 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import com.example.femobile.*;
 import com.example.femobile.service.api.AlbumApi;
 import com.example.femobile.service.api.AuthApi;
+import com.example.femobile.service.api.PlayListApi;
 import com.example.femobile.service.api.SongApi;
 import com.example.femobile.service.api.ArtistAPI;
 
@@ -85,5 +86,8 @@ public class RetrofitClient {
     }
     public static ArtistAPI getArtistApi(Context context){
         return getClient(context).create(ArtistAPI.class);
+    }
+    public static PlayListApi getplayListApi(Context context){
+        return getClient(context).create(PlayListApi.class);
     }
 }
