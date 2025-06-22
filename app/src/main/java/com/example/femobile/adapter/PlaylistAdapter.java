@@ -10,65 +10,26 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.femobile.R;
-import com.example.femobile.model.request.AlbumRequest.Album;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.PlaylistViewHolder> {
-    private List<Album> albums = new ArrayList<>();
-    private OnItemClickListener listener;
 
-    public interface OnItemClickListener {
-        void onItemClick(Album album);
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
-    }
 
     @NonNull
     @Override
     public PlaylistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_playlist, parent, false);
-        return new PlaylistViewHolder(view);
+        return null;
     }
 
     @Override
     public void onBindViewHolder(@NonNull PlaylistViewHolder holder, int position) {
-        Album album = albums.get(position);
-        holder.tvPlaylistName.setText(album.getTitle());
 
-        String imageUrl = album.getCoverUrl();
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(holder.itemView.getContext())
-                    .load(imageUrl)
-                    .placeholder(R.drawable.ic_music_note)
-                    .error(R.drawable.ic_music_note)
-                    .centerCrop()
-                    .into(holder.ivPlaylistCover);
-        } else {
-            holder.ivPlaylistCover.setImageResource(R.drawable.ic_music_note);
-        }
-
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(album);
-            }
-        });
     }
 
     @Override
     public int getItemCount() {
-        return albums.size();
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    public void submitList(List<Album> newAlbums) {
-        this.albums = newAlbums != null ? newAlbums : new ArrayList<>();
-        notifyDataSetChanged();
+        return 0;
     }
 
     static class PlaylistViewHolder extends RecyclerView.ViewHolder {
@@ -81,4 +42,4 @@ public class PlaylistAdapter extends RecyclerView.Adapter<PlaylistAdapter.Playli
             ivPlaylistCover = itemView.findViewById(R.id.ivPlaylistCover);
         }
     }
-} 
+}

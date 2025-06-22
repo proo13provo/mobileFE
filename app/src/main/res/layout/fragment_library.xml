@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:background="#121212">
 
@@ -46,15 +47,15 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_search"
-            android:tint="#FFFFFF"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="16dp"
+            app:tint="#FFFFFF" />
 
         <ImageView
             android:id="@+id/btnAdd"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_add"
-            android:tint="#FFFFFF" />
+            app:tint="#FFFFFF" />
     </LinearLayout>
 
     <!-- Tabs -->
@@ -118,18 +119,24 @@
 
     <!-- RecyclerView for playlists/albums/artists -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvLibrary"
+        android:id="@+id/rvAlbums"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:clipToPadding="false"
-        android:overScrollMode="never" />
-
-    <!-- Bottom Navigation (nếu dùng chung layout thì có thể bỏ phần này) -->
-    <!--
-    <include layout="@layout/bottom_navigation" />
-    -->
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/rvSongs"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        tools:listitem="@layout/item_album" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvArtist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/rvSongs"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        tools:listitem="@layout/item_artist" />
 
 </LinearLayout>
