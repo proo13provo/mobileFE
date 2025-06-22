@@ -128,6 +128,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleAuthManage
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("accessToken", authResponse.getAccessToken());
         editor.putString("refreshToken", authResponse.getRefreshToken());
+        String email = binding.etEmail.getText().toString();
+        editor.putString("email", email);
         editor.apply();
 
         showSuccess("Đăng nhập thành công!");

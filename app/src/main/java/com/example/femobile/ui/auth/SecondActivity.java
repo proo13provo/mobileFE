@@ -14,6 +14,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.viewpager2.widget.ViewPager2;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.core.view.GravityCompat;
 
 import com.example.femobile.R;
 import com.example.femobile.adapter.viewPagerAdapter;
@@ -33,6 +35,7 @@ public class SecondActivity extends AppCompatActivity {
     private boolean bound = false;
     BottomNavigationView navigationView;
     ViewPager2 mViewpage;
+    private DrawerLayout drawerLayout;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -54,6 +57,16 @@ public class SecondActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
+
+        drawerLayout = findViewById(R.id.drawerLayout);
+        ImageView imgAvatar = findViewById(R.id.imgAvatar);
+        if (imgAvatar != null) {
+            imgAvatar.setOnClickListener(v -> {
+                if (drawerLayout != null) {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            });
+        }
 
         navigationView = findViewById(R.id.bottom_nav);
         mViewpage = findViewById(R.id.view_pager);
@@ -103,6 +116,14 @@ public class SecondActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        TextView drawerSettings = findViewById(R.id.drawerSettings);
+        if (drawerSettings != null) {
+            drawerSettings.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     @Override

@@ -52,6 +52,7 @@
             android:exported="false" />
         <activity android:name=".ui.auth.ActivityAlbum"/>
         <activity android:name=".ui.auth.ActivityArtist"/>
+        <activity android:name=".ui.auth.SettingsActivity" />
 
 
         <!--suppress AndroidDomInspection -->

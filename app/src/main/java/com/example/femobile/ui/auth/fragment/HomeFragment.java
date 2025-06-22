@@ -23,6 +23,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.core.view.GravityCompat;
 
 import com.example.femobile.R;
 import com.example.femobile.adapter.PlaylistAdapter;
@@ -154,6 +156,14 @@ public class HomeFragment extends Fragment {
                 playlistAdapter.submitList(albumList);
             } else {
                 playlistAdapter.submitList(new ArrayList<>());
+            }
+        });
+        
+        TextView imgAvatar = view.findViewById(R.id.imgAvatar);
+        imgAvatar.setOnClickListener(v -> {
+            DrawerLayout drawerLayout = getActivity().findViewById(R.id.drawerLayout);
+            if (drawerLayout != null) {
+                drawerLayout.openDrawer(GravityCompat.START);
             }
         });
         
