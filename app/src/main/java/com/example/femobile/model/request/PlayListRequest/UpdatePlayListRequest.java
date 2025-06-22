@@ -1,23 +1,23 @@
 package com.example.femobile.model.request.PlayListRequest;
 
 public class UpdatePlayListRequest {
-    private Long id;
+    private String id;
     private String name;
     private String description;
     private String imageUrl;
 
-    public UpdatePlayListRequest(Long id, String name, String description, String imageUrl) {
+    public UpdatePlayListRequest(String id, String name, String description, String imageUrl) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
