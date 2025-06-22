@@ -79,7 +79,7 @@ public class AddToPlaylistDialogFragment extends BottomSheetDialogFragment {
                 String playlistName = input.getText().toString().trim();
                 if (!playlistName.isEmpty()) {
                     LibraryItem newPlaylist = new LibraryItem(
-                        R.drawable.ic_music_placeholder,
+                        R.drawable.ic_music_note,
                         playlistName,
                         "0 songs"
                     );
