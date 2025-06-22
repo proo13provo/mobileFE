@@ -18,6 +18,7 @@ import java.util.List;
 public class LibraryItemAdapter extends RecyclerView.Adapter<LibraryItemAdapter.LibraryViewHolder> {
     private List<LibraryItem> items = new ArrayList<>();
     private OnItemClickListener listener;
+    private String highlightedTitle = null;
 
     public interface OnItemClickListener {
         void onItemClick(LibraryItem item);
@@ -31,6 +32,8 @@ public class LibraryItemAdapter extends RecyclerView.Adapter<LibraryItemAdapter.
         items = newItems;
         notifyDataSetChanged();
     }
+
+    public void setHighlightedTitle(String title) { this.highlightedTitle = title; }
 
     @NonNull
     @Override
@@ -64,6 +67,11 @@ public class LibraryItemAdapter extends RecyclerView.Adapter<LibraryItemAdapter.
             imgCover.setImageResource(item.getImageResId());
             tvTitle.setText(item.getTitle());
             tvSubtitle.setText(item.getSubtitle());
+            if (highlightedTitle != null && highlightedTitle.equals(item.getTitle())) {
+                itemView.setBackgroundColor(itemView.getResources().getColor(R.color.teal_200));
+            } else {
+                itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            }
             itemView.setOnClickListener(v -> {
                 if (listener != null) listener.onItemClick(item);
             });

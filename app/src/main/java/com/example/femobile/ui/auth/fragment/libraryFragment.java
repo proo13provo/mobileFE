@@ -19,19 +19,29 @@ import com.example.femobile.ui.auth.viewmodel.LibraryViewModel;
 public class libraryFragment extends Fragment {
     private LibraryItemAdapter adapter;
     private LibraryViewModel libraryViewModel;
+    private String highlightedTitle = null;
+    private RecyclerView rvLibrary;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library,container,false);
-        RecyclerView rvLibrary = view.findViewById(R.id.rvLibrary);
+        rvLibrary = view.findViewById(R.id.rvLibrary);
         adapter = new LibraryItemAdapter();
         rvLibrary.setLayoutManager(new LinearLayoutManager(getContext()));
         rvLibrary.setAdapter(adapter);
 
         libraryViewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
         libraryViewModel.getPlaylists().observe(getViewLifecycleOwner(), playlists -> {
-            adapter.submitList(new java.util.ArrayList<>(playlists));
+            if (!playlists.isEmpty() && (highlightedTitle == null || !highlightedTitle.equals(playlists.get(0).getTitle()))) {
+                highlightedTitle = playlists.get(0).getTitle();
+                adapter.setHighlightedTitle(highlightedTitle);
+                adapter.submitList(new java.util.ArrayList<>(playlists));
+                rvLibrary.scrollToPosition(0);
+            } else {
+                adapter.setHighlightedTitle(null);
+                adapter.submitList(new java.util.ArrayList<>(playlists));
+            }
         });
         return view;
     }
